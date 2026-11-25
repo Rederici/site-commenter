@@ -198,9 +198,17 @@ function ExtensionApp() {
         submitNote: settings.projectShortName ? (
           <>
             Задача будет создана в проекте{" "}
-            <strong>
-              {settings.projectName || settings.projectShortName} ({settings.projectShortName})
-            </strong>
+            <a
+              className="uic-submit-note-link"
+              href={issuesUrl(settings)}
+              target="_blank"
+              rel="noreferrer"
+              title={issuesUrl(settings)}
+            >
+              <strong>
+                {settings.projectName || settings.projectShortName} ({settings.projectShortName})
+              </strong>
+            </a>
             , тип <strong>{settings.issueType || "—"}</strong>.
           </>
         ) : (
