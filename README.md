@@ -83,11 +83,14 @@ export function App() {
 ## Расширение Chrome
 
 ```bash
+cp .env.example .env        # YouTrack URL и домены по умолчанию
 npm run build:extension     # → apps/extension/dist
 ```
 
-Затем `chrome://extensions` → «Режим разработчика» → «Загрузить распакованное»
-→ выбрать `apps/extension/dist`. Подробности — [`apps/extension/README.md`](apps/extension/README.md).
+Значения из `.env` вшиваются в бандл при сборке; сам файл в репозиторий не
+попадает. Затем `chrome://extensions` → «Режим разработчика» → «Загрузить
+распакованное» → выбрать `apps/extension/dist`. Подробности —
+[`apps/extension/README.md`](apps/extension/README.md).
 
 В расширении снимок делает браузер (`chrome.tabs.captureVisibleTab`), поэтому
 в кадр попадают видео, canvas и iframe, а панель замечания на момент съёмки
@@ -112,9 +115,9 @@ npm run start         # http://127.0.0.1:4400
 npm run showcase      # собрать витрину компонентов
 ```
 
-Стенд поднимает страницу-трекер и API в памяти, собирает расширение и патчит
-его манифест под `127.0.0.1`. Витрина показывает только компоненты модуля.
-Подробности — [`tools/local-dev/README.md`](tools/local-dev/README.md).
+Стенд поднимает страницу-трекер и API в памяти и собирает расширение. Витрина
+показывает только компоненты модуля. Подробности —
+[`tools/local-dev/README.md`](tools/local-dev/README.md).
 
 ## Сервер
 

@@ -8,14 +8,27 @@
 
 ```bash
 npm install
+cp .env.example .env        # и задайте свои значения
 npm run build:extension     # → apps/extension/dist
 ```
+
+Значения по умолчанию вшиваются в бандл при сборке, поэтому `.env` нужен
+именно на этапе `build:extension`:
+
+| Переменная | Что задаёт |
+|---|---|
+| `SITECOMMENTER_YOUTRACK_URL` | инстанс YouTrack, куда уходят задачи |
+| `SITECOMMENTER_DEFAULT_SITES` | домены по умолчанию для попапа, через запятую |
+
+Переменные окружения важнее `.env`. Без `.env` собирается нейтральный
+placeholder (`yt.example.com` / `todo.example.com`), а сборка предупреждает об
+этом. Сам `.env` в репозиторий не попадает.
 
 Затем `chrome://extensions` → включить «Режим разработчика» → «Загрузить
 распакованное» → выбрать `apps/extension/dist`.
 
-Для локального стенда `npm run start` дополнительно патчит собранный манифест
-под `127.0.0.1`/`localhost`.
+Для локального стенда добавьте `127.0.0.1` в список сайтов в popup — манифест
+больше не патчится.
 
 ## Как это работает
 
@@ -44,8 +57,8 @@ npm run build:extension     # → apps/extension/dist
 - **Выйти** — сбрасывает авторизацию и выбранный проект, чтобы можно было войти другим пользователем.
 - **Где работает попап** — список доменов или URL, на которых content script
   вообще ставится на страницу. Сайты можно добавлять и удалять без пересборки;
-  после изменения нужно обновить открытые вкладки. По умолчанию —
-  `todo.example.com`.
+  после изменения нужно обновить открытые вкладки. Начальный список задаётся
+  `SITECOMMENTER_DEFAULT_SITES` при сборке.
 
 Выбранные проект и тип хранятся в `chrome.storage.local`; окно замечания
 показывает их в подсказке и использует при создании задачи. Само окно
@@ -53,17 +66,17 @@ npm run build:extension     # → apps/extension/dist
 
 ## Текущая конфигурация
 
-- YouTrack: `https://yt.example.com`
+- YouTrack: `SITECOMMENTER_YOUTRACK_URL` из `.env`
 - OAuth client ID: **test-sitecommenter**
 - проект: **не выбран по умолчанию**, выбирается в popup
 - тип: **Bug** по умолчанию, если он есть в проекте; остальные значения
   загружаются из YouTrack
-- сайты: по умолчанию `todo.example.com`, список редактируется в popup
+- сайты: `SITECOMMENTER_DEFAULT_SITES` из `.env`, список редактируется в popup
 - заголовок: обязательный, до 120 символов
 - описание: необязательное, если приложен снимок
 
-Чтобы изменить URL или client ID, поправьте `DEFAULT_SETTINGS` /
-`YOUTRACK_CLIENT_ID` в `src/youtrack-config.ts` и пересоберите расширение.
+Чтобы изменить URL или список сайтов, задайте их в `.env` и пересоберите
+расширение. Client ID меняется в `YOUTRACK_CLIENT_ID` в `src/youtrack-config.ts`.
 
 ## OAuth
 
@@ -85,8 +98,9 @@ backend, который обменивает код на токен.
 
 | Что | Где |
 |---|---|
-| Домены, на которых работает попап | popup → «Где работает попап» |
-| YouTrack URL и OAuth client ID | `src/youtrack-config.ts` |
+| Домены, на которых работает попап | popup → «Где работает попап» (или `.env`) |
+| YouTrack URL | `.env` → `SITECOMMENTER_YOUTRACK_URL` |
+| OAuth client ID | `src/youtrack-config.ts` |
 | Проект и тип задачи | popup расширения |
 | Горячая клавиша | `manifest.json` → `commands` |
 

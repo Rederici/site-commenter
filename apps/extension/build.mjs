@@ -5,7 +5,7 @@
  */
 
 import { copyFile, mkdir, readdir, rm, stat } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,55 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, "..", "..");
 const dist = path.join(here, "dist");
 const require = createRequire(import.meta.url);
+
+/**
+ * Значения по умолчанию вшиваются в бандлы на этапе сборки.
+ * Берутся из .env в корне репозитория, переменные окружения важнее файла.
+ */
+function readEnvFile(file) {
+  if (!existsSync(file)) return {};
+  const values = {};
+  for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
+    const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
+    if (!match) continue;
+    let value = match[2].trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    values[match[1]] = value;
+  }
+  return values;
+}
+
+const env = { ...readEnvFile(path.join(root, ".env")), ...process.env };
+
+function readUrl(name, fallback) {
+  const raw = String(env[name] || "").trim();
+  if (!raw) {
+    console.warn(`  ${name} не задан, используется ${fallback}`);
+    return fallback;
+  }
+  return raw.replace(/\/+$/, "");
+}
+
+function readSiteList(name, fallback) {
+  const raw = String(env[name] || "").trim();
+  const sites = raw
+    .split(",")
+    .map((site) => site.trim())
+    .filter(Boolean);
+  if (sites.length === 0) {
+    console.warn(`  ${name} не задан, используется ${fallback.join(", ")}`);
+    return fallback;
+  }
+  return sites;
+}
+
+const youtrackUrl = readUrl("SITECOMMENTER_YOUTRACK_URL", "https://yt.example.com");
+const defaultSites = readSiteList("SITECOMMENTER_DEFAULT_SITES", ["todo.example.com"]);
 
 function loadEsbuild() {
   try {
@@ -35,7 +84,11 @@ const shared = {
   platform: "browser",
   target: ["chrome109"],
   jsx: "automatic",
-  define: { "process.env.NODE_ENV": '"production"' },
+  define: {
+    "process.env.NODE_ENV": '"production"',
+    __SITECOMMENTER_YOUTRACK_URL__: JSON.stringify(youtrackUrl),
+    __SITECOMMENTER_DEFAULT_SITES__: JSON.stringify(defaultSites),
+  },
   logLevel: "warning",
   nodePaths,
   // Стили модуля импортируются строкой и вставляются в shadow root.

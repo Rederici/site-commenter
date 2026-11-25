@@ -103,7 +103,7 @@ async function syncSites() {
 async function addSite() {
   const site = normalizeSite(siteInput.value);
   if (!site) {
-    setStatus("Укажите домен или URL, например todo.example.com", "error");
+    setStatus("Укажите домен или URL, например example.com", "error");
     return;
   }
   if (settings.sites.includes(site)) {

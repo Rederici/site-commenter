@@ -10,14 +10,14 @@ export type YouTrackSettings = {
 };
 
 export const DEFAULT_SETTINGS: YouTrackSettings = {
-  url: "https://yt.example.com",
+  url: __SITECOMMENTER_YOUTRACK_URL__,
   projectId: "",
   projectName: "",
   projectShortName: "",
   issueType: "Bug",
   typeFieldId: "",
   availableTypes: [],
-  sites: ["todo.example.com"],
+  sites: [...__SITECOMMENTER_DEFAULT_SITES__],
 };
 
 export const YOUTRACK_CLIENT_ID = "test-sitecommenter";
