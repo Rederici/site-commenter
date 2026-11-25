@@ -8,8 +8,8 @@ import {
   type UiCommentInput,
   type UiCommentsApi,
   type UiCommentsContext,
-} from "../src";
-import "../src/styles.css";
+} from "@sitecommenter/ui-comments";
+import "@sitecommenter/ui-comments/styles.css";
 import "./styles.css";
 
 /**

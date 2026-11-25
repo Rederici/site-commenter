@@ -1,9 +1,10 @@
 /**
  * Витрина именно компонентов библиотеки, без демо-приложения.
  *
- * Здесь нет фейкового портала: только два компонента из src/
- * (UiCommentsWidget и UiCommentsRegistry) и нейтральная страница-мишень,
- * чтобы было что обводить. API — локальный стенд по реальному контракту.
+ * Здесь нет фейкового портала: только два компонента из
+ * `@sitecommenter/ui-comments` (UiCommentsWidget и UiCommentsRegistry) и
+ * нейтральная страница-мишень, чтобы было что обводить. API — локальный стенд
+ * по реальному контракту.
  */
 
 import { createRoot } from "react-dom/client";
@@ -15,8 +16,8 @@ import {
   createUiCommentsApi,
   type UiCommentsContext,
   type UiCommentsUser,
-} from "../../src";
-import "../../src/styles.css";
+} from "@sitecommenter/ui-comments";
+import "@sitecommenter/ui-comments/styles.css";
 import "./styles.css";
 
 const api = createUiCommentsApi({ basePath: "/api/v1/ui-comments" });
@@ -121,8 +122,9 @@ function TargetPage() {
   return (
     <div className="sc-page">
       <div className="sc-note">
-        Это не демо-приложение. На странице только два компонента из <code>src/</code>: popup
-        «Замечание» и реестр. Сама страница — нейтральная мишень, чтобы было что обводить.
+        Это не демо-приложение. На странице только два компонента из{" "}
+        <code>@sitecommenter/ui-comments</code>: popup «Замечание» и реестр. Сама страница —
+        нейтральная мишень, чтобы было что обводить.
       </div>
 
       <div className="sc-page-head">

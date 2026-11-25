@@ -1,8 +1,8 @@
 /**
  * Минимальный статический сервер для demo/dist (без зависимостей).
  *
- *   node demo/serve.mjs          # http://127.0.0.1:5173
- *   node demo/serve.mjs 4173     # другой порт
+ *   npm run demo
+ *   node apps/demo/serve.mjs 4173
  */
 
 import { createReadStream, existsSync, statSync } from "node:fs";
@@ -25,7 +25,7 @@ const TYPES = {
 };
 
 if (!existsSync(path.join(dist, "index.html"))) {
-  console.error("нет demo/dist — сначала выполните: node demo/build.mjs");
+  console.error("нет apps/demo/dist — сначала выполните: npm run demo");
   process.exit(1);
 }
 

@@ -1,17 +1,17 @@
 # Site Commenter — расширение Chrome
 
-Обёртка над клиентом из `src/`: content script монтирует окно замечаний в
+Обёртка над `@sitecommenter/ui-comments`: content script монтирует окно замечаний в
 shadow root страницы, снимок берётся нативный — `chrome.tabs.captureVisibleTab`.
 
 ## Сборка
 
 ```bash
 npm install
-npm run build:extension     # → extension/dist
+npm run build:extension     # → apps/extension/dist
 ```
 
 Затем `chrome://extensions` → включить «Режим разработчика» → «Загрузить
-распакованное» → выбрать `extension/dist`.
+распакованное» → выбрать `apps/extension/dist`.
 
 ## Как это работает
 
@@ -43,7 +43,8 @@ npm run build:extension     # → extension/dist
 ## Публикация
 
 - **Chrome Web Store**: аккаунт разработчика ($5), загрузка ZIP из
-  `extension/dist`, ревью обычно 1–3 дня. Обновления приходят автоматически.
+  `apps/extension/dist`, ревью обычно 1–3 дня. Обновления приходят автоматически.
+  Для локального пилота Store не нужен.
 - **Внутри компании**: политика `ExtensionSettings` в Chrome Enterprise
   (force-install по ID) или ручная установка распакованного в dev-режиме.
 - Иконки: добавьте `icons` в манифест (16/32/48/128 PNG), если нужен свой

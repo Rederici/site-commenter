@@ -11,8 +11,8 @@ npm run demo          # сборка + сервер на http://127.0.0.1:5173
 Или по шагам:
 
 ```bash
-node demo/build.mjs
-node demo/serve.mjs 4173
+node apps/demo/build.mjs
+node apps/demo/serve.mjs 4173
 ```
 
 Что можно проверить:

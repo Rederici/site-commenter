@@ -7,7 +7,7 @@
  * момент съёмки скрывается, разметка остаётся.
  */
 
-import type { ScreenShot } from "../../src";
+import type { ScreenShot } from "@sitecommenter/ui-comments";
 
 export const HOST_ID = "ui-comments-extension-root";
 

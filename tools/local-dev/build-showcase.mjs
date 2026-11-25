@@ -1,7 +1,7 @@
 /**
- * Сборка витрины компонентов: local-dev/showcase/dist.
+ * Сборка витрины компонентов: tools/local-dev/showcase/dist.
  *
- *   node local-dev/build-showcase.mjs
+ *   npm run showcase
  */
 
 import { copyFile, mkdir, rm, stat } from "node:fs/promises";
@@ -11,11 +11,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.join(here, "..");
+const root = path.join(here, "..", "..");
 const dist = path.join(here, "showcase", "dist");
 const require = createRequire(import.meta.url);
 
-const esbuild = require("esbuild");
+function loadEsbuild() {
+  try {
+    return require("esbuild");
+  } catch (error) {
+    throw new Error(`esbuild не найден: выполните npm install в корне проекта\n${error.message}`);
+  }
+}
+
+const esbuild = loadEsbuild();
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });

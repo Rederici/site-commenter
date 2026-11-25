@@ -1,14 +1,15 @@
 # Локальный стенд Site Commenter
 
 Обвязка для проверки расширения без интеграции в реальный проект:
-страница-«трекер задач», API в памяти и скрипты сборки. Основной код
-(`src/`, `extension/`, `server/`) не меняется.
+страница-«трекер задач», API в памяти и скрипты сборки. Код библиотеки,
+расширения и сервера (`packages/ui-comments`, `apps/extension`, `server`)
+не меняется.
 
 ## Запуск
 
 ```bash
-npm install                      # один раз; react-dom нужен для демо, не для модуля
-node local-dev/start.mjs         # http://127.0.0.1:4400
+npm install                      # один раз; react-dom нужен для стенда и демо
+npm run start                    # http://127.0.0.1:4400
 ```
 
 `start.mjs` собирает расширение, правит **собранный** манифест под
@@ -17,7 +18,7 @@ node local-dev/start.mjs         # http://127.0.0.1:4400
 Затем в Chrome:
 
 1. `chrome://extensions` → «Режим разработчика».
-2. «Загрузить распакованное» → каталог `sitecommenter/extension/dist`.
+2. «Загрузить распакованное» → каталог `sitecommenter/apps/extension/dist`.
 3. Открыть `http://127.0.0.1:4400/` и обновить страницу (content script
    монтируется при загрузке).
 4. Кнопка «Замечание» справа внизу или `Alt+Shift+C`.
@@ -30,25 +31,26 @@ node local-dev/start.mjs         # http://127.0.0.1:4400
 ```
 start.mjs            сборка расширения + патч манифеста + сервер
 patch-manifest.mjs   content_scripts.matches → http://127.0.0.1/*, http://localhost/*
-server.mjs           HTTP API по контракту src/README.md, данные в памяти
+server.mjs           HTTP API по контракту packages/ui-comments/README.md, данные в памяти
 page.html            страница-трекер и простой реестр на #/comments
 showcase/            витрина компонентов библиотеки (popup + UiCommentsRegistry)
-build-showcase.mjs   сборка витрины: local-dev/showcase/dist
+build-showcase.mjs   сборка витрины: tools/local-dev/showcase/dist
 ```
 
 ## Витрина компонентов (без демо)
 
 ```bash
-node local-dev/build-showcase.mjs
-node local-dev/server.mjs
+npm run showcase                 # собрать
+npm run start                    # поднять стенд
 ```
 
 Открыть `http://127.0.0.1:4400/showcase/`. На странице нет фейкового портала:
-только `UiCommentsWidget` и `UiCommentsRegistry` из `src/`, натянутые на
-локальный API. Окружающая страница — нейтральная мишень и написана здесь,
-а не входит в библиотеку. Это ближайшее к проду представление того, как
-выглядят сами компоненты: popup умеет рисовать и отправлять, реестр — искать,
-фильтровать, показывать снимки, менять статус и копировать ссылку.
+только `UiCommentsWidget` и `UiCommentsRegistry` из
+`@sitecommenter/ui-comments`, натянутые на локальный API. Окружающая страница —
+нейтральная мишень и написана здесь, а не входит в библиотеку. Это ближайшее к
+проду представление того, как выглядят сами компоненты: popup умеет рисовать и
+отправлять, реестр — искать, фильтровать, показывать снимки, менять статус и
+копировать ссылку.
 
 ## Что проверять
 
@@ -65,9 +67,9 @@ node local-dev/server.mjs
 - Данные и снимки живут только в памяти процесса: после перезапуска пусто.
 - `/api/v1/auth/me` всегда возвращает тестового пользователя с `admin.write`;
   реальной аутентификации нет.
-- Патч манифеста применяется к `extension/dist/manifest.json`. Повторный
+- Патч манифеста применяется к `apps/extension/dist/manifest.json`. Повторный
   `npm run build:extension` вернёт `https://your-app.example.com/*` — снова
-  запустите `node local-dev/start.mjs` (или `patch-manifest.mjs`).
+  запустите `npm run start` (или `patch-manifest.mjs`).
 - API расширения — same-origin (`/api/v1/...`), поэтому страница и API должны
   быть на одном адресе. Стенд так и устроен.
 - Для стенда расширение получает `<all_urls>` из исходного манифеста: это

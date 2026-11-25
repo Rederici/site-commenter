@@ -29,10 +29,11 @@ npm install html-to-image
 
 ## Установка
 
-1. Скопируйте каталог `uicomments/` в `src/` проекта.
+1. Подключите пакет `@sitecommenter/ui-comments` (workspace-пакет или копия
+   `packages/ui-comments`).
 2. Импортируйте стили один раз:
    ```ts
-   import "./uicomments/styles.css";
+   import "@sitecommenter/ui-comments/styles.css";
    ```
 3. Оберните приложение провайдером и поставьте окно:
 
@@ -42,8 +43,8 @@ import {
   UiCommentsWidget,
   UiCommentsRegistry,
   createUiCommentsApi,
-} from "./uicomments";
-import "./uicomments/styles.css";
+} from "@sitecommenter/ui-comments";
+import "@sitecommenter/ui-comments/styles.css";
 
 const api = createUiCommentsApi({ basePath: "/api/v1/ui-comments" });
 
@@ -120,7 +121,7 @@ GET    {base}/{id}/screenshot                    → image/jpeg
 ```
 
 Полное описание полей и требований к серверу — в разделе «Сервер» ниже.
-Готовый вариант — пакет `server/` (Go + SQLite), его README лежит рядом.
+Готовый вариант — [`server/`](../../server/README.md) (Go + SQLite).
 
 ## Сервер: контракт
 

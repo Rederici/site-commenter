@@ -17,8 +17,8 @@ import {
   type UiComment,
   type UiCommentsContext,
   type UiCommentsUser,
-} from "../../src";
-import styles from "../../src/styles.css";
+} from "@sitecommenter/ui-comments";
+import styles from "@sitecommenter/ui-comments/styles.css";
 import { HOST_ID, nativeCapture } from "./nativeCapture";
 
 const API_BASE = "/api/v1/ui-comments";

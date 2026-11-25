@@ -1,38 +1,29 @@
 {
   "name": "sitecommenter",
   "version": "0.1.0",
+  "private": true,
   "description": "Screen annotations and UI feedback with screenshots (React module + Chrome extension)",
   "type": "module",
   "license": "MIT",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css"
-  },
-  "files": [
-    "src",
-    "README.md",
-    "LICENSE"
-  ],
-  "sideEffects": [
-    "*.css"
+  "workspaces": [
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build:extension": "node extension/build.mjs",
-    "demo": "node demo/build.mjs && node demo/serve.mjs"
-  },
-  "peerDependencies": {
-    "react": ">=18"
-  },
-  "dependencies": {
-    "html-to-image": "^1.11.13"
+    "build": "npm run build:extension && npm -w @sitecommenter/demo run build && npm run showcase",
+    "build:extension": "npm -w @sitecommenter/extension run build",
+    "demo": "npm -w @sitecommenter/demo run build && npm -w @sitecommenter/demo run serve",
+    "showcase": "node tools/local-dev/build-showcase.mjs",
+    "start": "node tools/local-dev/start.mjs",
+    "typecheck": "npm -w @sitecommenter/ui-comments run typecheck && npm -w @sitecommenter/extension run typecheck && npm -w @sitecommenter/demo run typecheck"
   },
   "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "esbuild": "^0.28.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
   },
   "keywords": [
     "react",

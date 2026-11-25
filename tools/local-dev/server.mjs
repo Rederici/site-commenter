@@ -1,12 +1,12 @@
 /**
  * Локальный стенд для Site Commenter.
  *
- * Отдаёт страницу-«трекер задач» и реализует контракт API из src/README.md
+ * Отдаёт страницу-«трекер задач» и реализует контракт API из README клиента
  * в памяти процесса. Ничего не пишет на диск, кроме сгенерированных файлов
- * рядом (extension/dist, local-dev/dist при необходимости).
+ * рядом (apps/extension/dist, tools/local-dev/showcase/dist при необходимости).
  *
- *   node local-dev/server.mjs          # http://127.0.0.1:4400
- *   node local-dev/server.mjs 4500     # другой порт
+ *   node tools/local-dev/server.mjs          # http://127.0.0.1:4400
+ *   node tools/local-dev/server.mjs 4500     # другой порт
  *
  * Данные живут до остановки сервера.
  */
@@ -292,7 +292,7 @@ server.listen(port, "127.0.0.1", () => {
   console.log("  Страница-трекер — корень, реестр — #/comments.");
   console.log("  Компоненты библиотеки без демо — /showcase/.");
   console.log("  Расширение: chrome://extensions → «Загрузить распакованное» →");
-  console.log("  sitecommenter/extension/dist (после node local-dev/start.mjs).");
+  console.log("  sitecommenter/apps/extension/dist (после npm run start).");
   console.log("  Остановить: Ctrl+C. Замечания живут в памяти процесса.");
   console.log("");
 });

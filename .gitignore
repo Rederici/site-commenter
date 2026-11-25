@@ -1,6 +1,5 @@
 node_modules/
 dist/
-extension/dist/
 .idea/
 *.log
 *.db

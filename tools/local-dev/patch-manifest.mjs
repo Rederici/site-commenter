@@ -1,9 +1,8 @@
 /**
  * Правит собранный манифест расширения так, чтобы content script работал
- * на локальном стенде (127.0.0.1 / localhost). Исходный
- * extension/manifest.json не меняется.
+ * на локальном стенде (127.0.0.1 / localhost). Исходный манифест не меняется.
  *
- *   node local-dev/patch-manifest.mjs
+ *   node tools/local-dev/patch-manifest.mjs
  */
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -12,10 +11,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const manifestPath = path.join(here, "..", "extension", "dist", "manifest.json");
+const root = path.join(here, "..", "..");
+const manifestPath = path.join(root, "apps", "extension", "dist", "manifest.json");
 
 if (!existsSync(manifestPath)) {
-  console.error("нет extension/dist/manifest.json — сначала: npm run build:extension");
+  console.error("нет apps/extension/dist/manifest.json — сначала: npm run build:extension");
   process.exit(1);
 }
 

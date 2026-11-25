@@ -4,19 +4,17 @@
 (стрелка, подчёркивание, обводка, надпись), пишет замечание — и всё вместе со
 снимком уходит на сервер. Замечания собираются в реестре со ссылками на экраны.
 
-Два способа поставить:
-
-- **встроенный модуль** — React-компоненты в вашем приложении;
-- **расширение Chrome** — работает поверх любого сайта, снимок нативный
-  (`captureVisibleTab`), интеграция в код не нужна.
-
 ```
-src/          React-клиент (окно, разметка, снимок, реестр)
-server/       эталонный сервер: HTTP API + таблица (Go, database/sql)
-extension/    расширение Chrome, использует тот же клиент
-demo/         демо-страница с вымышленными данными (источник скриншотов)
-examples/     пример подключения
+packages/ui-comments/   React-модуль: окно, разметка, снимок, реестр, API-клиент
+apps/extension/         расширение Chrome, тонкая обёртка над модулем
+apps/demo/              демо-страница с вымышленными данными
+server/                 эталонный сервер: HTTP API + таблица (Go, database/sql)
+tools/local-dev/        локальный стенд для расширения и витрины компонентов
+docs/                   скриншоты
 ```
+
+Модуль и расширение — один продукт с двумя точками входа: расширение
+импортирует `@sitecommenter/ui-comments`, а не копию кода.
 
 ![Окно замечания с разметкой](docs/widget.png)
 ![Реестр замечаний](docs/registry.png)
@@ -40,7 +38,7 @@ examples/     пример подключения
 ## Быстрый старт
 
 ```bash
-npm install html-to-image
+npm install
 ```
 
 ```tsx
@@ -49,8 +47,8 @@ import {
   UiCommentsWidget,
   UiCommentsRegistry,
   createUiCommentsApi,
-} from "./ui-comments/src";
-import "./ui-comments/src/styles.css";
+} from "@sitecommenter/ui-comments";
+import "@sitecommenter/ui-comments/styles.css";
 
 const api = createUiCommentsApi({ basePath: "/api/v1/ui-comments" });
 
@@ -79,21 +77,17 @@ export function App() {
 
 Реестр — отдельным маршрутом: `<UiCommentsRegistry />`.
 
-Подробности — [`src/README.md`](src/README.md): настройки провайдера, контракт
-API, разметка, темы и ограничения.
+Подробности — [`packages/ui-comments/README.md`](packages/ui-comments/README.md):
+настройки провайдера, контракт API, разметка, темы и ограничения.
 
 ## Расширение Chrome
 
-Собранное расширение лежит в `extension/dist` и работает без интеграции в
-приложение:
-
 ```bash
-npm install            # react, esbuild, типы
-npm run build:extension
+npm run build:extension     # → apps/extension/dist
 ```
 
 Затем `chrome://extensions` → «Режим разработчика» → «Загрузить распакованное»
-→ выбрать `extension/dist`. Подробности и публикация — [`extension/README.md`](extension/README.md).
+→ выбрать `apps/extension/dist`. Подробности — [`apps/extension/README.md`](apps/extension/README.md).
 
 В расширении снимок делает браузер (`chrome.tabs.captureVisibleTab`), поэтому
 в кадр попадают видео, canvas и iframe, а панель замечания на момент съёмки
@@ -103,12 +97,22 @@ npm run build:extension
 ## Демо
 
 ```bash
-npm install
 npm run demo          # http://127.0.0.1:5173
 ```
 
 Демо-страница с вымышленными данными: замечания хранятся в памяти, сервер не
-нужен. Из неё сняты скриншоты выше — подробности в [`demo/README.md`](demo/README.md).
+нужен. Подробности — [`apps/demo/README.md`](apps/demo/README.md).
+
+## Локальный стенд
+
+```bash
+npm run start         # http://127.0.0.1:4400
+npm run showcase      # собрать витрину компонентов
+```
+
+Стенд поднимает страницу-трекер и API в памяти, собирает расширение и патчит
+его манифест под `127.0.0.1`. Витрина показывает только компоненты модуля.
+Подробности — [`tools/local-dev/README.md`](tools/local-dev/README.md).
 
 ## Сервер
 
@@ -116,7 +120,8 @@ npm run demo          # http://127.0.0.1:5173
 
 1. **Готовый пакет `server/`** (Go + SQLite) — компилируется в бинарник хоста,
    отдельного сервиса не нужно. Подключение — [`server/README.md`](server/README.md).
-2. **Свой бэкенд** — реализуйте пять маршрутов из контракта в `src/README.md`
+2. **Свой бэкенд** — реализуйте пять маршрутов из контракта в
+   [`packages/ui-comments/README.md`](packages/ui-comments/README.md)
    (список, создание, статус, удаление, снимок). Клиент не изменится; если
    формат ответа не `{"data": ...}`, реализуйте интерфейс `UiCommentsApi` вручную.
 
