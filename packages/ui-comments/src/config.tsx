@@ -50,6 +50,12 @@ export type UiCommentsConfig = {
   submitBlocked?: string;
   /** Ссылка на экран из замечания. По умолчанию — сохранённый адрес. */
   screenHref?: (comment: UiComment) => string;
+  /**
+   * Как открыть ссылку реестра. По умолчанию — обычный переход по `href`
+   * (подходит встроенному модулю). Расширение открывает ссылку отдельной
+   * вкладкой через chrome.tabs.
+   */
+  onOpenLink?: (url: string) => void;
   /** Ссылка на конкретное замечание для чата/агента. */
   commentHref?: (comment: UiComment) => string;
   /** Вызывается после успешной отправки — для уведомления хоста. */
@@ -70,6 +76,7 @@ export type ResolvedUiCommentsConfig = {
   titleField?: UiCommentsConfig["titleField"];
   screenHref: (comment: UiComment) => string;
   commentHref: (comment: UiComment) => string;
+  onOpenLink?: (url: string) => void;
   labels: UiCommentsLabels;
   capture?: () => Promise<ScreenShot | null>;
   onSent?: (comment: UiComment) => void;
@@ -132,6 +139,7 @@ export function UiCommentsProvider({ config, children }: { config: UiCommentsCon
       titleField: config.titleField,
       screenHref: config.screenHref || ((comment) => comment.url || comment.route || "#"),
       commentHref: config.commentHref || ((comment) => `#/comments?comment=${encodeURIComponent(comment.id)}`),
+      onOpenLink: config.onOpenLink,
       labels: {
         ...DEFAULT_LABELS,
         ...config.labels,

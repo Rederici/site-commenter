@@ -239,6 +239,12 @@ function ExtensionApp() {
         onSent: (comment) => {
           console.debug("youtrack: создана задача", comment.id);
         },
+        onOpenLink: (url) => {
+          void chrome.runtime.sendMessage({
+            type: "youtrack:open-url",
+            payload: { url },
+          });
+        },
       }}
     >
       <UiCommentsWidget />

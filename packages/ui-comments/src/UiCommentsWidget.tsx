@@ -39,6 +39,7 @@ export function UiCommentsWidget() {
     annotations: annotationsEnabled,
     enabled,
     registryHref,
+    onOpenLink,
     submitNote,
     submitBlocked,
     titleField,
@@ -495,7 +496,18 @@ export function UiCommentsWidget() {
               />
               {labels.shotToggle}
             </label>
-            <a className="uic-link" href={registryHref}>
+            <a
+              className="uic-link"
+              href={registryHref}
+              onClick={
+                onOpenLink
+                  ? (event) => {
+                      event.preventDefault();
+                      onOpenLink(registryHref);
+                    }
+                  : undefined
+              }
+            >
               {labels.listLink}
               {openCount > 0 ? ` (${openCount})` : ""}
             </a>
