@@ -40,6 +40,7 @@ export function UiCommentsWidget() {
     enabled,
     registryHref,
     submitNote,
+    titleField,
     onSent,
   } = useUiCommentsConfig();
   const openKey = `${storageKey}.open`;
@@ -73,6 +74,7 @@ export function UiCommentsWidget() {
   const suppressClick = useRef(false);
   const [dragging, setDragging] = useState(false);
   const [text, setText] = useState("");
+  const [title, setTitle] = useState("");
   const [withShot, setWithShot] = useState(true);
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState("");
@@ -82,6 +84,9 @@ export function UiCommentsWidget() {
   const [tool, setTool] = useState<AnnotationTool>("pointer");
   const [color, setColor] = useState(ANNOTATION_COLORS[0]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
+
+  const titleRequired = Boolean(titleField) && titleField?.required !== false;
+  const titleMissing = titleRequired && !title.trim();
 
   const list = useCommentsList(api, {}, `${storageKey}:list`);
   const { reload } = list;
@@ -253,9 +258,13 @@ export function UiCommentsWidget() {
 
   const submit = async () => {
     if (busy) return;
+    if (titleMissing) {
+      setError("Укажите заголовок");
+      return;
+    }
     const willCapture = withShot || annotations.length > 0;
     if (!text.trim() && !willCapture) {
-      setError("Опишите замечание или приложите снимок экрана");
+      setError("Добавьте описание или снимок экрана");
       return;
     }
     setBusy(true);
@@ -285,6 +294,7 @@ export function UiCommentsWidget() {
     setStage(labels.sending);
     try {
       const created = await api.create({
+        title: title.trim() || undefined,
         text: text.trim(),
         route: context.route,
         routeTitle: context.routeTitle,
@@ -297,6 +307,7 @@ export function UiCommentsWidget() {
         screenshot,
       });
       setText("");
+      setTitle("");
       setStage("");
       setAnnotations([]);
       setTool("pointer");
@@ -397,13 +408,36 @@ export function UiCommentsWidget() {
           )}
 
           <div className="uic-body">
+            {titleField && (
+              <label className="uic-title-field">
+                <span className="uic-title-label">
+                  <span>
+                    {titleField.label}
+                    {titleRequired && <span className="uic-required">*</span>}
+                  </span>
+                  {titleField.maxLength ? (
+                    <span className="uic-counter">
+                      {title.length}/{titleField.maxLength}
+                    </span>
+                  ) : null}
+                </span>
+                <input
+                  className="uic-input uic-title-input"
+                  value={title}
+                  maxLength={titleField.maxLength}
+                  placeholder={titleField.placeholder}
+                  onChange={(event) => setTitle(event.target.value)}
+                  autoFocus={!annotating}
+                />
+              </label>
+            )}
             <textarea
               className="uic-input uic-textarea"
               rows={4}
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder={labels.placeholder}
-              autoFocus={!annotating}
+              autoFocus={!annotating && !titleField}
             />
             {shotWarning && <div className="uic-note">{shotWarning}</div>}
             {!text.trim() && (withShot || annotations.length > 0) && (
@@ -437,7 +471,7 @@ export function UiCommentsWidget() {
             <button
               className="uic-btn uic-btn-primary"
               onClick={() => void submit()}
-              disabled={busy || (!text.trim() && !withShot && annotations.length === 0)}
+              disabled={busy || titleMissing || (!text.trim() && !withShot && annotations.length === 0)}
             >
               {busy ? stage || labels.saving : labels.submit}
             </button>

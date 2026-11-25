@@ -18,6 +18,14 @@ export type UiCommentsConfig = {
   context: UiCommentsContext;
   /** Переопределение русских подписей. */
   labels?: Partial<UiCommentsLabels>;
+  /** Поле заголовка над описанием. По умолчанию выключено. */
+  titleField?: {
+    label: string;
+    placeholder?: string;
+    maxLength?: number;
+    /** По умолчанию true, если поле задано. */
+    required?: boolean;
+  };
   /** Префикс ключей localStorage. По умолчанию `ui-comments`. */
   storageKey?: string;
   /** Корень, который попадает на снимок. По умолчанию `body`. */
@@ -53,6 +61,7 @@ export type ResolvedUiCommentsConfig = {
   enabled: boolean;
   registryHref: string;
   submitNote?: ReactNode;
+  titleField?: UiCommentsConfig["titleField"];
   screenHref: (comment: UiComment) => string;
   commentHref: (comment: UiComment) => string;
   labels: UiCommentsLabels;
@@ -111,6 +120,7 @@ export function UiCommentsProvider({ config, children }: { config: UiCommentsCon
       enabled: config.enabled !== false,
       registryHref: config.registryHref || "#/comments",
       submitNote: config.submitNote,
+      titleField: config.titleField,
       screenHref: config.screenHref || ((comment) => comment.url || comment.route || "#"),
       commentHref: config.commentHref || ((comment) => `#/comments?comment=${encodeURIComponent(comment.id)}`),
       labels: {

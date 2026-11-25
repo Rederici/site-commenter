@@ -27,6 +27,8 @@ export type UiComment = {
 };
 
 export type UiCommentInput = {
+  /** Короткий заголовок задачи/замечания. */
+  title?: string;
   text: string;
   route: string;
   routeTitle: string;
