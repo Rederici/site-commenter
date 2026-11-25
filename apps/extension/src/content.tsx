@@ -31,6 +31,8 @@ const user: UiCommentsUser = {
   role: "YouTrack",
 };
 
+installLocationHooks();
+
 if (!document.getElementById(HOST_ID) && !document.documentElement.hasAttribute(INLINE_MARKER)) {
   mount();
 }
@@ -62,9 +64,12 @@ function ExtensionApp() {
   const api = useMemo<UiCommentsApi>(
     () => ({
       async create(input: UiCommentInput): Promise<UiComment> {
+        const current = buildContext();
         const payload: UiCommentInput = {
           ...input,
-          routeTitle: document.title.trim() || input.routeTitle,
+          route: current.route,
+          routeTitle: current.routeTitle,
+          url: current.url,
         };
         const response = (await chrome.runtime.sendMessage({
           type: "youtrack:create",
@@ -81,18 +86,18 @@ function ExtensionApp() {
           author: user.name || user.username,
           authorUsername: user.username,
           role: user.role || "",
-          text: input.text,
+          text: payload.text,
           status: "new",
-          route: input.route,
-          routeTitle: input.routeTitle,
-          url: input.url,
-          channelId: input.channelId || "",
-          channelName: input.channelName || "",
-          date: input.date || "",
-          viewportWidth: input.viewportWidth || 0,
-          viewportHeight: input.viewportHeight || 0,
-          hasScreenshot: Boolean(input.screenshot),
-          screenshotType: input.screenshot ? "image/jpeg" : "",
+          route: payload.route,
+          routeTitle: payload.routeTitle,
+          url: payload.url,
+          channelId: payload.channelId || "",
+          channelName: payload.channelName || "",
+          date: payload.date || "",
+          viewportWidth: payload.viewportWidth || 0,
+          viewportHeight: payload.viewportHeight || 0,
+          hasScreenshot: Boolean(payload.screenshot),
+          screenshotType: payload.screenshot ? "image/jpeg" : "",
           resolution: "",
           resolvedBy: "",
           resolvedAt: "",
@@ -106,6 +111,17 @@ function ExtensionApp() {
     }),
     []
   );
+
+  useEffect(() => {
+    let last = `${window.location.href}\n${document.title}`;
+    const timer = window.setInterval(() => {
+      const next = `${window.location.href}\n${document.title}`;
+      if (next === last) return;
+      last = next;
+      setVersion((value) => value + 1);
+    }, 400);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const bump = () => setVersion((value) => value + 1);
@@ -185,10 +201,12 @@ function buildContext(): UiCommentsContext {
 }
 
 // SPA меняет адрес через history.pushState — hashchange при этом не срабатывает.
-for (const method of ["pushState", "replaceState"] as const) {
-  const original = history[method].bind(history);
-  history[method] = (...args: Parameters<History["pushState"]>) => {
-    original(...args);
-    window.dispatchEvent(new Event(LOCATION_EVENT));
-  };
+function installLocationHooks() {
+  for (const method of ["pushState", "replaceState"] as const) {
+    const original = history[method].bind(history);
+    history[method] = (...args: Parameters<History["pushState"]>) => {
+      original(...args);
+      window.dispatchEvent(new Event(LOCATION_EVENT));
+    };
+  }
 }
