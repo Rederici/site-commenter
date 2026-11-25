@@ -163,10 +163,22 @@ function ExtensionApp() {
     const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
       if (area === "local" && changes["youtrack.settings"]) reload();
     };
+    // Настройки меняются в popup. Если событие storage потерялось, состояние
+    // всё равно обновится при возврате на вкладку и при открытии окна.
+    const onFocus = () => reload();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") reload();
+    };
     chrome.storage.onChanged.addListener(listener);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener(UI_COMMENTS_OPEN_EVENT, reload);
     return () => {
       alive = false;
       chrome.storage.onChanged.removeListener(listener);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener(UI_COMMENTS_OPEN_EVENT, reload);
     };
   }, []);
 
