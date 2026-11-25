@@ -4,6 +4,9 @@ export type YouTrackSettings = {
   projectName: string;
   projectShortName: string;
   issueType: string;
+  typeFieldId?: string;
+  availableTypes?: string[];
+  sites: string[];
 };
 
 export const DEFAULT_SETTINGS: YouTrackSettings = {
@@ -12,6 +15,9 @@ export const DEFAULT_SETTINGS: YouTrackSettings = {
   projectName: "",
   projectShortName: "",
   issueType: "Bug",
+  typeFieldId: "",
+  availableTypes: [],
+  sites: ["todo.example.com"],
 };
 
 export const YOUTRACK_CLIENT_ID = "test-sitecommenter";
@@ -37,6 +43,13 @@ export async function loadSettings(): Promise<YouTrackSettings> {
       projectName: String(settings.projectName || ""),
       projectShortName: String(settings.projectShortName || ""),
       issueType: String(settings.issueType || DEFAULT_SETTINGS.issueType),
+      typeFieldId: String(settings.typeFieldId || ""),
+      availableTypes: Array.isArray(settings.availableTypes)
+        ? settings.availableTypes.map(String).filter(Boolean)
+        : DEFAULT_SETTINGS.availableTypes,
+      sites: Array.isArray(settings.sites)
+        ? settings.sites.map(String).filter(Boolean)
+        : DEFAULT_SETTINGS.sites,
     };
   } catch {
     return DEFAULT_SETTINGS;

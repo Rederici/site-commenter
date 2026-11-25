@@ -20,6 +20,12 @@ declare namespace chrome {
         ) => boolean | void
       ): void;
     };
+    const onInstalled: {
+      addListener(callback: (details: { reason: string }) => void): void;
+    };
+    const onStartup: {
+      addListener(callback: () => void): void;
+    };
   }
 
   namespace identity {
@@ -28,6 +34,17 @@ declare namespace chrome {
       callback: (redirectUrl?: string) => void
     ): void;
     function getRedirectURL(path?: string): string;
+  }
+
+  namespace scripting {
+    interface RegisteredContentScript {
+      id: string;
+      matches: string[];
+      js: string[];
+      runAt?: "document_start" | "document_end" | "document_idle";
+    }
+    function registerContentScripts(scripts: RegisteredContentScript[]): Promise<void>;
+    function unregisterContentScripts(filter?: { ids?: string[] }): Promise<void>;
   }
 
   namespace storage {

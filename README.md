@@ -91,9 +91,9 @@ npm run build:extension     # → apps/extension/dist
 
 В расширении снимок делает браузер (`chrome.tabs.captureVisibleTab`), поэтому
 в кадр попадают видео, canvas и iframe, а панель замечания на момент съёмки
-скрывается. Проект и тип задачи выбираются в popup расширения; подробности —
-[`apps/extension/README.md`](apps/extension/README.md). Если на странице уже есть
-встроенный модуль, расширение не ставит второй виджет
+скрывается. Проект, тип задачи и список сайтов выбираются в popup расширения;
+подробности — [`apps/extension/README.md`](apps/extension/README.md). Если на
+странице уже есть встроенный модуль, расширение не ставит второй виджет
 (метка `data-ui-comments-inline`).
 
 ## Демо

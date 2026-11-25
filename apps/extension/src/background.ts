@@ -14,6 +14,55 @@ import {
   getCurrentUser,
   loginUser,
 } from "./youtrack";
+import { loadSettings } from "./youtrack-config";
+
+const SCRIPT_ID = "site-commenter";
+
+function sitePatterns(site: string): string[] {
+  let text = site.trim().toLowerCase();
+  if (!text) return [];
+
+  if (text.includes("://")) {
+    try {
+      text = new URL(text).hostname;
+    } catch {
+      return [];
+    }
+  } else {
+    text = text.split("/")[0].replace(/:\d+$/, "");
+  }
+
+  if (!/^(\*\.)?[a-z0-9.-]+$/.test(text)) return [];
+  return [`http://${text}/*`, `https://${text}/*`];
+}
+
+async function syncContentScripts(): Promise<void> {
+  const settings = await loadSettings();
+  const matches = [...new Set(settings.sites.flatMap(sitePatterns))];
+
+  try {
+    await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
+  } catch {
+    // скрипт ещё не был зарегистрирован
+  }
+
+  if (!matches.length) return;
+  await chrome.scripting.registerContentScripts([
+    {
+      id: SCRIPT_ID,
+      matches,
+      js: ["content.js"],
+      runAt: "document_idle",
+    },
+  ]);
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  void syncContentScripts().catch((error) => console.warn("sync content scripts:", error));
+});
+chrome.runtime.onStartup.addListener(() => {
+  void syncContentScripts().catch((error) => console.warn("sync content scripts:", error));
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "ui-comments:capture") {
@@ -80,7 +129,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return false;
     }
     fetchIssueTypes(payload.projectId)
-      .then((values) => sendResponse({ values }))
+      .then((result) => sendResponse(result))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
+  if (message?.type === "youtrack:sync-sites") {
+    syncContentScripts()
+      .then(() => sendResponse({ ok: true }))
       .catch((error: unknown) =>
         sendResponse({ error: error instanceof Error ? error.message : String(error) })
       );

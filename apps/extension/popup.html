@@ -30,6 +30,17 @@
           <span>Тип задачи <b class="required" aria-hidden="true">*</b></span>
           <select id="type"></select>
         </label>
+
+        <div class="sites">
+          <div class="sites-head">Где работает попап</div>
+          <ul id="sites" class="sites-list"></ul>
+          <div class="site-add">
+            <input id="site-input" type="text" placeholder="todo.example.com" />
+            <button id="site-add" class="btn btn-secondary" type="button">Добавить</button>
+          </div>
+          <p class="hint">Домен или URL. После изменения обновите открытые вкладки.</p>
+        </div>
+
         <p class="hint">Проект обязателен: без него задача не создастся. Тип по умолчанию — Bug, если он доступен.</p>
       </section>
 

@@ -15,6 +15,9 @@ const projectSelect = document.getElementById("project") as HTMLSelectElement;
 const typeSelect = document.getElementById("type") as HTMLSelectElement;
 const statusEl = document.getElementById("status") as HTMLElement;
 const youtrackLink = document.getElementById("youtrack-link") as HTMLAnchorElement;
+const sitesList = document.getElementById("sites") as HTMLElement;
+const siteInput = document.getElementById("site-input") as HTMLInputElement;
+const siteAdd = document.getElementById("site-add") as HTMLButtonElement;
 
 let settings: YouTrackSettings = { ...DEFAULT_SETTINGS };
 let user: User | null = null;
@@ -47,6 +50,79 @@ function currentProject(): Project | undefined {
       (settings.projectId && project.id === settings.projectId) ||
       (settings.projectShortName && project.shortName === settings.projectShortName)
   );
+}
+
+function normalizeSite(value: string): string {
+  let text = value.trim().toLowerCase();
+  if (!text) return "";
+  if (text.includes("://")) {
+    try {
+      text = new URL(text).hostname;
+    } catch {
+      return "";
+    }
+  } else {
+    text = text.split("/")[0].replace(/:\d+$/, "");
+  }
+  return /^(\*\.)?[a-z0-9.-]+$/.test(text) ? text : "";
+}
+
+function renderSites() {
+  sitesList.replaceChildren();
+  if (!settings.sites.length) {
+    const empty = document.createElement("li");
+    empty.className = "sites-empty";
+    empty.textContent = "Пока нет сайтов — попап нигде не появится.";
+    sitesList.append(empty);
+    return;
+  }
+
+  for (const site of settings.sites) {
+    const item = document.createElement("li");
+    const name = document.createElement("span");
+    name.textContent = site;
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "site-remove";
+    remove.title = `Убрать ${site}`;
+    remove.textContent = "×";
+    remove.addEventListener("click", () => void removeSite(site));
+    item.append(name, remove);
+    sitesList.append(item);
+  }
+}
+
+async function syncSites() {
+  try {
+    await send({ type: "youtrack:sync-sites" });
+  } catch {
+    // content script обновится при следующей загрузке страницы
+  }
+}
+
+async function addSite() {
+  const site = normalizeSite(siteInput.value);
+  if (!site) {
+    setStatus("Укажите домен или URL, например todo.example.com", "error");
+    return;
+  }
+  if (settings.sites.includes(site)) {
+    setStatus("Этот сайт уже добавлен", "warn");
+    return;
+  }
+
+  settings = await saveSettings({ sites: [...settings.sites, site] });
+  siteInput.value = "";
+  renderSites();
+  await syncSites();
+  setStatus("Сохранено. Обновите открытые вкладки.", "success");
+}
+
+async function removeSite(site: string) {
+  settings = await saveSettings({ sites: settings.sites.filter((item) => item !== site) });
+  renderSites();
+  await syncSites();
+  setStatus("Сохранено. Обновите открытые вкладки.", "success");
 }
 
 function renderAuth() {
@@ -84,8 +160,11 @@ function renderSettings() {
   if (!user) {
     projectSelect.replaceChildren();
     typeSelect.replaceChildren();
+    sitesList.replaceChildren();
     return;
   }
+
+  renderSites();
 
   const project = currentProject();
 
@@ -147,18 +226,31 @@ async function loadProjects() {
   const project = currentProject();
 
   if (project) {
+    const sameProject =
+      settings.projectId === project.id || settings.projectShortName === project.shortName;
     settings = await saveSettings({
       projectId: project.id,
       projectName: project.name || project.shortName || "",
       projectShortName: project.shortName || "",
     });
-    await loadTypes(project.id, false);
+    if (sameProject && settings.availableTypes?.length) {
+      issueTypes = settings.availableTypes;
+      if (!issueTypes.includes(settings.issueType)) {
+        const next = issueTypes.includes("Bug") ? "Bug" : issueTypes[0] || "";
+        settings = await saveSettings({ issueType: next });
+      }
+      renderSettings();
+    } else {
+      await loadTypes(project.id, false);
+    }
   } else if (settings.projectShortName) {
     settings = await saveSettings({
       projectId: "",
       projectName: "",
       projectShortName: "",
       issueType: "Bug",
+      availableTypes: [],
+      typeFieldId: "",
     });
     issueTypes = [];
   }
@@ -167,7 +259,7 @@ async function loadProjects() {
 }
 
 async function loadTypes(projectId: string, preferBug: boolean) {
-  const response = await send<{ values?: string[]; error?: string }>({
+  const response = await send<{ values?: string[]; fieldId?: string; error?: string }>({
     type: "youtrack:issue-types",
     payload: { projectId },
   });
@@ -189,9 +281,11 @@ async function loadTypes(projectId: string, preferBug: boolean) {
         ? "Bug"
         : issueTypes[0] || "";
 
-  if (next !== settings.issueType) {
-    settings = await saveSettings({ issueType: next });
-  }
+  settings = await saveSettings({
+    issueType: next,
+    availableTypes: issueTypes,
+    typeFieldId: response.fieldId || "",
+  });
 
   renderSettings();
 }
@@ -205,6 +299,8 @@ async function onProjectChange() {
       projectName: "",
       projectShortName: "",
       issueType: "Bug",
+      availableTypes: [],
+      typeFieldId: "",
     });
     issueTypes = [];
     renderSettings();
@@ -217,6 +313,8 @@ async function onProjectChange() {
     projectName: project.name || project.shortName || "",
     projectShortName: project.shortName || "",
     issueType: "",
+    availableTypes: [],
+    typeFieldId: "",
   });
   setStatus("Загружаем типы задач…");
   await loadTypes(project.id, true);
@@ -284,6 +382,12 @@ async function init() {
   youtrackLink.title = settings.url;
   projectSelect.addEventListener("change", () => void onProjectChange());
   typeSelect.addEventListener("change", () => void onTypeChange());
+  siteAdd.addEventListener("click", () => void addSite());
+  siteInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    void addSite();
+  });
 
   const response = await send<{ user?: User | null }>({ type: "youtrack:status" });
   user = response.user || null;

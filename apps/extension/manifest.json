@@ -8,6 +8,7 @@
   "permissions": [
     "activeTab",
     "identity",
+    "scripting",
     "storage"
   ],
   "host_permissions": [
@@ -39,16 +40,5 @@
       "description": "Открыть окно замечания"
     }
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "https://todo.example.com/*"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "run_at": "document_idle"
-    }
-  ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM3qb0pYIOsGtuEpXwNLNqYipBjzFMceGvGT2B5UuDLCVeO2zdpyg6btByen4SGutsZwA6wq3tbvFbx4rVOnjzYywjHTjjcn5AxElbTgq6YMB3Ndc3UCxstr+BQ+NfTOAGjLLLl7szTxTLOkWejuNBVqpHGsgfIyd0qP2BH4puV5zNQanl9vlve1Go02+n323ka3elR8V0wgxw9Gn2W+EsLc9hN5m7QZKk7kQax+wwNOYa2Isg+xZA+zrb2hHV4iOdDDWl1ujJeQb45XJZzMkfFh6Nh58ScThZAIIhys5BOyziSiCiFGg1DKAtNWSb1gZ8EwNqqh3a9VLfLVM3+9pQIDAQAB"
 }

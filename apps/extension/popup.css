@@ -166,6 +166,93 @@ select:disabled {
   font-size: 11px;
 }
 
+.sites {
+  display: grid;
+  gap: 7px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.sites-head {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sites-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sites-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
+  padding: 4px 6px 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #f8fafc;
+  font-size: 12px;
+}
+
+.sites-list li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sites-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.site-remove {
+  margin-left: auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.site-remove:hover {
+  color: var(--danger);
+}
+
+.site-add {
+  display: flex;
+  gap: 6px;
+}
+
+.site-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.site-add input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px #dbe7ff;
+}
+
+.site-add .btn {
+  flex: none;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
 .status {
   min-height: 16px;
   margin: 12px 0 0;

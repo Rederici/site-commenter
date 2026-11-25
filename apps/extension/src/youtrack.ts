@@ -8,6 +8,12 @@ type ProjectField = {
   field?: { name?: string };
   bundle?: { values?: Array<{ name?: string }> };
 };
+type IssueField = {
+  id?: string;
+  projectCustomField?: { id?: string; field?: { name?: string } };
+};
+type Draft = { id: string; fields?: IssueField[] };
+type TypeValues = { fieldId: string; values: string[] };
 type Issue = { id: string; idReadable?: string };
 export type YouTrackUser = { id: string; login: string; name?: string; email?: string };
 
@@ -68,14 +74,77 @@ async function findProject(token: string, settings: YouTrackSettings): Promise<P
   return found;
 }
 
-async function findTypeField(token: string, settings: YouTrackSettings, projectId: string): Promise<ProjectField> {
-  const fields = await request<ProjectField[]>(
-    token,
-    `${settings.url}/api/admin/projects/${encodeURIComponent(projectId)}/customFields?fields=id,field(name)`
-  );
-  const type = fields.find((field) => field.field?.name === "Type");
-  if (!type) throw new Error(`В проекте ${settings.projectShortName} нет поля Type`);
-  return type;
+async function adminTypeValues(
+  token: string,
+  settings: YouTrackSettings,
+  projectId: string
+): Promise<TypeValues | null> {
+  try {
+    const fields = await request<ProjectField[]>(
+      token,
+      `${settings.url}/api/admin/projects/${encodeURIComponent(projectId)}/customFields?fields=id,field(name),bundle(values(name))`
+    );
+    const type = fields.find((field) => field.field?.name === "Type");
+    if (!type) return null;
+    return {
+      fieldId: type.id,
+      values: (type.bundle?.values || []).map((value) => value.name || "").filter(Boolean),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function draftTypeValues(
+  token: string,
+  settings: YouTrackSettings,
+  projectId: string
+): Promise<TypeValues | null> {
+  let draft: Draft | null = null;
+  try {
+    draft = await request<Draft>(
+      token,
+      `${settings.url}/api/users/me/drafts?fields=id,fields(projectCustomField(id,field(name)))`,
+      {
+        method: "POST",
+        body: JSON.stringify({ project: { id: projectId }, summary: "Site Commenter: type lookup" }),
+      }
+    );
+    const type = draft.fields?.find((field) => field.projectCustomField?.field?.name === "Type");
+    const fieldId = type?.projectCustomField?.id || "";
+    if (!fieldId) return null;
+
+    const values = await request<Array<{ name?: string }>>(
+      token,
+      `${settings.url}/api/issues/${encodeURIComponent(draft.id)}/customFields/${encodeURIComponent(fieldId)}/possibleValues?$skip=0&fields=name&query=`
+    );
+    return {
+      fieldId,
+      values: values.map((value) => value.name || "").filter(Boolean),
+    };
+  } catch {
+    return null;
+  } finally {
+    if (draft) {
+      await request(token, `${settings.url}/api/users/me/drafts/${encodeURIComponent(draft.id)}`, {
+        method: "DELETE",
+      }).catch(() => {});
+    }
+  }
+}
+
+async function lookupTypeValues(
+  token: string,
+  settings: YouTrackSettings,
+  projectId: string
+): Promise<TypeValues> {
+  const admin = await adminTypeValues(token, settings, projectId);
+  if (admin?.values.length) return admin;
+
+  const draft = await draftTypeValues(token, settings, projectId);
+  if (draft?.values.length) return draft;
+
+  return { fieldId: admin?.fieldId || draft?.fieldId || "", values: ["Bug"] };
 }
 
 export async function getCurrentUser(): Promise<YouTrackUser | null> {
@@ -114,24 +183,10 @@ export async function fetchProjects(): Promise<Project[]> {
   return items.sort((a, b) => (a.name || a.shortName || "").localeCompare(b.name || b.shortName || "", "ru"));
 }
 
-export async function fetchIssueTypes(projectId: string): Promise<string[]> {
+export async function fetchIssueTypes(projectId: string): Promise<TypeValues> {
   const settings = await loadSettings();
   const token = await getAccessToken({ interactive: false });
-
-  try {
-    const fields = await request<ProjectField[]>(
-      token,
-      `${settings.url}/api/admin/projects/${encodeURIComponent(projectId)}/customFields?fields=id,field(name),bundle(values(name))`
-    );
-    const type = fields.find((field) => field.field?.name === "Type");
-    const values = (type?.bundle?.values || [])
-      .map((value) => value.name || "")
-      .filter(Boolean);
-    return values.length ? [...new Set(values)] : ["Bug"];
-  } catch {
-    // Если метаданные проекта недоступны, оставляем рабочий дефолт.
-    return ["Bug"];
-  }
+  return lookupTypeValues(token, settings, projectId);
 }
 
 function buildSummary(input: UiCommentInput): string {
@@ -219,7 +274,11 @@ export async function createTask(input: UiCommentInput): Promise<CreatedTask> {
 
   const token = await getAccessToken();
   const project = await findProject(token, settings);
-  const typeField = await findTypeField(token, settings, project.id);
+  const typeFieldId =
+    settings.typeFieldId || (await lookupTypeValues(token, settings, project.id)).fieldId;
+  if (!typeFieldId) {
+    throw new Error(`Не удалось определить поле Type в проекте ${settings.projectShortName}`);
+  }
 
   const summary = buildSummary(input);
   const description = buildDescription(input);
@@ -232,7 +291,7 @@ export async function createTask(input: UiCommentInput): Promise<CreatedTask> {
       description,
       customFields: [
         {
-          id: typeField.id,
+          id: typeFieldId,
           name: "Type",
           $type: "SingleEnumIssueCustomField",
           value: { name: settings.issueType },
