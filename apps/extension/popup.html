@@ -11,7 +11,10 @@
       <span class="logo">SC</span>
       <div>
         <strong>Site Commenter</strong>
-        <small>замечания → YouTrack</small>
+        <small>
+          замечания →
+          <a id="youtrack-link" href="https://yt.example.com" target="_blank" rel="noreferrer">YouTrack</a>
+        </small>
       </div>
     </header>
 
@@ -20,21 +23,17 @@
 
       <section id="settings" class="settings" hidden>
         <label class="field">
-          <span>Проект</span>
+          <span>Проект <b class="required" aria-hidden="true">*</b></span>
           <select id="project"></select>
         </label>
         <label class="field">
-          <span>Тип задачи</span>
+          <span>Тип задачи <b class="required" aria-hidden="true">*</b></span>
           <select id="type"></select>
         </label>
         <p class="hint">Проект обязателен: без него задача не создастся. Тип по умолчанию — Bug, если он доступен.</p>
       </section>
 
       <p id="status" class="status" role="status"></p>
-
-      <div class="actions">
-        <button id="open" class="btn btn-secondary" type="button">Открыть форму замечания</button>
-      </div>
     </main>
 
     <script src="popup.js"></script>

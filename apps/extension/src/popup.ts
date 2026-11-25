@@ -14,7 +14,7 @@ const settingsEl = document.getElementById("settings") as HTMLElement;
 const projectSelect = document.getElementById("project") as HTMLSelectElement;
 const typeSelect = document.getElementById("type") as HTMLSelectElement;
 const statusEl = document.getElementById("status") as HTMLElement;
-const openButton = document.getElementById("open") as HTMLButtonElement;
+const youtrackLink = document.getElementById("youtrack-link") as HTMLAnchorElement;
 
 let settings: YouTrackSettings = { ...DEFAULT_SETTINGS };
 let user: User | null = null;
@@ -278,31 +278,12 @@ async function logout() {
   }
 }
 
-function openCommentForm() {
-  setStatus("Открываем форму…");
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const tab = tabs[0];
-    if (!tab?.id) {
-      setStatus("Не удалось найти активную вкладку", "warn");
-      return;
-    }
-    chrome.tabs
-      .sendMessage(tab.id, { type: "ui-comments:open" })
-      .then(() => {
-        setStatus("Форма открыта на странице", "success");
-        window.close();
-      })
-      .catch(() => {
-        setStatus("На этой странице расширение не работает. Откройте todo.example.com.", "warn");
-      });
-  });
-}
-
 async function init() {
   settings = await loadSettings();
+  youtrackLink.href = settings.url;
+  youtrackLink.title = settings.url;
   projectSelect.addEventListener("change", () => void onProjectChange());
   typeSelect.addEventListener("change", () => void onTypeChange());
-  openButton.addEventListener("click", openCommentForm);
 
   const response = await send<{ user?: User | null }>({ type: "youtrack:status" });
   user = response.user || null;
