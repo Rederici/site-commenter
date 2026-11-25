@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: YouTrackSettings = {
 
 export const YOUTRACK_CLIENT_ID = "test-sitecommenter";
 export const YOUTRACK_SCOPE = "YouTrack";
+export const TITLE_MAX_LENGTH = 120;
 
 const SETTINGS_KEY = "youtrack.settings";
 

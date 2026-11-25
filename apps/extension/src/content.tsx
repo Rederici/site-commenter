@@ -20,7 +20,7 @@ import {
 } from "@sitecommenter/ui-comments";
 import styles from "@sitecommenter/ui-comments/styles.css";
 import { HOST_ID, nativeCapture } from "./nativeCapture";
-import { DEFAULT_SETTINGS, issuesUrl } from "./youtrack-config";
+import { DEFAULT_SETTINGS, TITLE_MAX_LENGTH, issuesUrl } from "./youtrack-config";
 
 const INLINE_MARKER = "data-ui-comments-inline";
 const LOCATION_EVENT = "ui-comments:location";
@@ -155,9 +155,15 @@ function ExtensionApp() {
         capture: nativeCapture,
         storageKey: "youtrack.ui-comments",
         registryHref: issuesUrl(DEFAULT_SETTINGS),
+        titleField: {
+          label: "Заголовок",
+          placeholder: "Кратко: что не так",
+          maxLength: TITLE_MAX_LENGTH,
+          required: true,
+        },
         labels: {
           title: "Замечание → задача YouTrack",
-          placeholder: "Что не так? Это станет описанием задачи",
+          placeholder: "Подробности и шаги воспроизведения (необязательно)",
           submit: "Создать задачу",
           sending: "Создаём задачу…",
           sent: "Задача создана",

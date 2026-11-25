@@ -1,6 +1,6 @@
 import type { UiCommentInput } from "@sitecommenter/ui-comments";
 import { getAccessToken } from "./oauth";
-import { loadSettings, type YouTrackSettings } from "./youtrack-config";
+import { TITLE_MAX_LENGTH, loadSettings, type YouTrackSettings } from "./youtrack-config";
 
 type Project = { id: string; name?: string; shortName?: string };
 type ProjectField = { id: string; field?: { name?: string } };
@@ -66,11 +66,36 @@ async function findTypeField(token: string, settings: YouTrackSettings, projectI
 }
 
 function buildSummary(input: UiCommentInput): string {
+  const title = input.title?.trim();
+  if (title) return title.slice(0, TITLE_MAX_LENGTH);
+
   const firstLine = input.text
     .split(/\r?\n/)
     .map((line) => line.trim())
     .find(Boolean);
-  return (firstLine || `Замечание по интерфейсу: ${input.routeTitle || input.route || "экран"}`).slice(0, 200);
+  return (firstLine || `Замечание по интерфейсу: ${input.routeTitle || input.route || "экран"}`).slice(
+    0,
+    TITLE_MAX_LENGTH
+  );
+}
+
+function queryTable(url: string): string {
+  let params: URLSearchParams;
+  try {
+    params = new URL(url).searchParams;
+  } catch {
+    return "";
+  }
+
+  const rows: string[] = [];
+  for (const [key, value] of params) rows.push(`| ${cell(key)} | ${cell(value)} |`);
+  if (rows.length === 0) return "";
+
+  return ["| Параметр | Значение |", "|---|---|", ...rows].join("\n");
+}
+
+function cell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\r?\n/g, " ").trim() || "—";
 }
 
 function buildDescription(input: UiCommentInput): string {
@@ -87,7 +112,15 @@ function buildDescription(input: UiCommentInput): string {
     .filter(Boolean)
     .join("\n");
 
-  return [input.text.trim(), context ? `---\n${context}` : ""].filter(Boolean).join("\n\n");
+  const query = input.url ? queryTable(input.url) : "";
+
+  return [
+    input.text.trim(),
+    context ? `---\n${context}` : "",
+    query ? `Параметры запроса:\n${query}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 function parseScreenshot(dataUrl: string): { blob: Blob; name: string } {
