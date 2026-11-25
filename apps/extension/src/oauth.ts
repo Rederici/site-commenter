@@ -23,12 +23,6 @@ type StoredPkce = {
 const AUTH_KEY = "youtrack.auth";
 const PKCE_KEY = "youtrack.pkce";
 
-/**
- * Для локального теста конфиденциального клиента. Для публичного клиента с
- * PKCE секрет не нужен; хранить его в расширении не стоит.
- */
-const CLIENT_SECRET = "";
-
 function base64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
@@ -60,8 +54,8 @@ async function writeAuth(auth: StoredAuth): Promise<void> {
 
 async function requestToken(params: Record<string, string>): Promise<StoredAuth> {
   const settings = await loadSettings();
+  // Публичный клиент с PKCE: client_secret не отправляется и не хранится.
   const body = new URLSearchParams(params);
-  if (CLIENT_SECRET) body.set("client_secret", CLIENT_SECRET);
 
   const response = await fetch(`${settings.url}/hub/api/rest/oauth2/token`, {
     method: "POST",
