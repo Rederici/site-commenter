@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buzzer — задачи</title>
+<style>
+  :root {
+    --panel: #ffffff;
+    --border: #e4e7ec;
+    --text: #1f2430;
+    --muted: #667085;
+    --accent: #2f6fed;
+    --danger: #d92d20;
+    --warn: #b54708;
+    --ok: #067647;
+    --bg: #f4f6fa;
+    --font: "Segoe UI", Roboto, Arial, sans-serif;
+    --shadow: 0 8px 24px rgba(16, 24, 40, .08);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); font-size: 14px; line-height: 1.45;
+  }
+  .app { min-height: 100%; display: flex; flex-direction: column; }
+  .top {
+    display: flex; align-items: center; gap: 24px; padding: 10px 20px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: linear-gradient(135deg, #2f6fed, #7f56d9); color: #fff; font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .brand strong { display: block; font-size: 15px; }
+  .brand small { color: var(--muted); font-size: 11px; }
+  .tabs { display: flex; gap: 4px; margin-left: 12px; }
+  .tabs a {
+    padding: 7px 12px; border-radius: 7px; color: var(--muted);
+    text-decoration: none; font-weight: 600;
+  }
+  .tabs a:hover { background: #eef2f8; }
+  .tabs a.is-active { background: #eaf1ff; color: var(--accent); }
+  .me { margin-left: auto; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .body { flex: 1; display: flex; min-height: 0; }
+  .side {
+    width: 232px; flex: none; padding: 16px; background: var(--panel);
+    border-right: 1px solid var(--border);
+  }
+  .side h3 {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 4px 0 8px;
+  }
+  .side a {
+    display: block; padding: 8px 10px; border-radius: 7px; color: var(--text);
+    text-decoration: none; margin-bottom: 2px;
+  }
+  .side a:hover { background: #f0f4fa; }
+  .side a.is-active { background: #eaf1ff; color: var(--accent); font-weight: 600; }
+  .side-card {
+    margin-top: 20px; padding: 12px; border: 1px dashed #c6d3ea; border-radius: 10px;
+    background: #f7faff;
+  }
+  .side-card h4 { margin: 0 0 6px; font-size: 12px; color: #344054; }
+  .side-card p { margin: 0; font-size: 12px; color: var(--muted); }
+  .main { flex: 1; min-width: 0; padding: 20px 24px 80px; overflow: auto; }
+  .page-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+  .page-head h1 { margin: 0 0 2px; font-size: 22px; }
+  .page-head p { margin: 0; color: var(--muted); font-size: 12px; }
+  .actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent);
+    background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .btn.ghost { background: #fff; color: #344054; border-color: #d0d5dd; }
+  .btn.small { padding: 5px 10px; font-size: 12px; }
+  .filters {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px 10px 0 0;
+    border-bottom: none;
+  }
+  select, input[type="text"], input:not([type]), textarea {
+    font: inherit; color: var(--text); background: #fff;
+    border: 1px solid #d0d5dd; border-radius: 8px; padding: 7px 10px; outline: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #dbe7ff; }
+  .filters input[type="text"], .filters input:not([type]) { width: 260px; }
+  .check { display: flex; align-items: center; gap: 6px; color: #475467; }
+  .check input { width: auto; }
+  .count { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .table-wrap {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 0 0 10px 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eef1f5; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: #fafbfd; }
+  tbody tr:hover { background: #f8faff; }
+  tbody tr:last-child td { border-bottom: none; }
+  .id { color: var(--muted); font-family: Consolas, monospace; font-size: 12px; }
+  .title { font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .chip {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; background: #eef2f8; color: #344054;
+  }
+  .chip.new { background: #eaf1ff; color: #1d4ed8; }
+  .chip.in_work { background: #fff4e5; color: var(--warn); }
+  .chip.fixed { background: #e7f8ef; color: var(--ok); }
+  .chip.rejected { background: #fdeceb; color: var(--danger); }
+  .priority { font-size: 12px; font-weight: 600; color: var(--danger); }
+  .priority.low { color: var(--muted); }
+  .detail {
+    margin-top: 18px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px;
+  }
+  .detail h2 { margin: 0 0 6px; font-size: 18px; }
+  .detail .meta { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+  .detail p { margin: 0 0 14px; max-width: 780px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: #475467; margin-bottom: 5px; }
+  .field textarea { width: 100%; max-width: 780px; resize: vertical; }
+  .detail-actions { display: flex; gap: 8px; }
+  .registry-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+  .registry-head h1 { margin: 0 0 2px; font-size: 22px; }
+  .registry-head p { margin: 0; color: var(--muted); font-size: 12px; }
+  .registry-list { display: grid; gap: 12px; }
+  .comment {
+    display: grid; grid-template-columns: 220px 1fr; gap: 14px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+  }
+  .comment .shot {
+    width: 100%; height: 132px; object-fit: cover; border: 1px solid var(--border);
+    border-radius: 7px; background: #f2f4f7; cursor: zoom-in;
+  }
+  .comment .no-shot {
+    width: 100%; height: 132px; display: grid; place-items: center; color: var(--muted);
+    background: #f8fafc; border: 1px dashed #d0d5dd; border-radius: 7px; font-size: 12px;
+  }
+  .comment h3 { margin: 0 0 4px; font-size: 15px; }
+  .comment .text { margin: 0 0 8px; white-space: pre-wrap; }
+  .comment .meta { color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+  .comment .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin-top: 8px; }
+  .comment .controls select { min-width: 150px; }
+  .comment .controls textarea { flex: 1 1 280px; min-height: 38px; }
+  .empty { padding: 28px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed #d0d5dd; border-radius: 10px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 900px) {
+    .side { display: none; }
+    .comment { grid-template-columns: 1fr; }
+    .filters { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="logo">BZ</span>
+      <div><strong>Buzzer</strong><small>трекер задач</small></div>
+    </div>
+    <nav class="tabs">
+      <a href="#/issues" data-tab="issues" class="is-active">Задачи</a>
+      <a href="#/comments" data-tab="comments">Замечания</a>
+    </nav>
+    <div class="me"><span class="dot"></span>Тестер Тестерович · Тестировщик</div>
+  </header>
+
+  <div class="body">
+    <aside class="side">
+      <h3>Проекты</h3>
+      <a class="is-active" href="#/issues">Buzzer</a>
+      <a href="#/issues">Планировщик</a>
+      <a href="#/issues">Отчёты</a>
+      <a href="#/issues">Администрирование</a>
+      <div class="side-card">
+        <h4>Локальный стенд</h4>
+        <p>Нажмите «Замечание» справа внизу или Alt+Shift+C. Обведите проблему и отправьте — снимок уйдёт вместе с контекстом экрана.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="issues">
+        <div class="page-head">
+          <div><h1>Задачи</h1><p>Проект Buzzer · спринт 47 · 24.11.2026</p></div>
+          <div class="actions"><button class="btn ghost">Экспорт</button><button class="btn">Новая задача</button></div>
+        </div>
+
+        <div class="filters">
+          <select aria-label="Статус">
+            <option>Все статусы</option><option>Новые</option><option>В работе</option><option>На проверке</option>
+          </select>
+          <input placeholder="Поиск по задачам…" aria-label="Поиск">
+          <label class="check"><input type="checkbox" checked> Только мои</label>
+          <span class="count">7 задач</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Задача</th><th>Приоритет</th><th>Статус</th><th>Исполнитель</th><th>Обновлена</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><div class="id">BUZ-412</div><div class="title">Кнопка «Сохранить» уезжает за границу карточки</div><div class="sub">Интерфейс · формы</div></td><td><span class="priority">Высокий</span></td><td><span class="chip new">Новая</span></td><td>Тестер Т.</td><td>сегодня, 11:20</td></tr>
+              <tr><td><div class="id">BUZ-411</div><div class="title">Фильтр по дате сбрасывается после перезагрузки</div><div class="sub">Отчёты · фильтры</div></td><td><span class="priority">Высокий</span></td><td><span class="chip in_work">В работе</span></td><td>Иванов А.</td><td>сегодня, 10:05</td></tr>
+              <tr><td><div class="id">BUZ-408</div><div class="title">В таблице не хватает колонки «Канал»</div><div class="sub">Планировщик</div></td><td><span class="priority low">Средний</span></td><td><span class="chip fixed">Исправлено</span></td><td>Петрова М.</td><td>вчера, 18:40</td></tr>
+              <tr><td><div class="id">BUZ-405</div><div class="title">Долгая загрузка списка при 500+ записях</div><div class="sub">Производительность</div></td><td><span class="priority low">Низкий</span></td><td><span class="chip in_work">В работе</span></td><td>Сидоров К.</td><td>вчера, 15:12</td></tr>
+              <tr><td><div class="id">BUZ-401</div><div class="title">Опечатка в подсказке к полю «Период»</div><div class="sub">Тексты</div></td><td><span class="priority low">Низкий</span></td><td><span class="chip fixed">Исправлено</span></td><td>Тестер Т.</td><td>23.11, 09:30</td></tr>
+              <tr><td><div class="id">BUZ-399</div><div class="title">Экспорт в CSV ломает кириллицу</div><div class="sub">Экспорт</div></td><td><span class="priority">Высокий</span></td><td><span class="chip rejected">Отклонено</span></td><td>Иванов А.</td><td>22.11, 16:02</td></tr>
+              <tr><td><div class="id">BUZ-395</div><div class="title">Нет подтверждения при удалении задачи</div><div class="sub">Интерфейс</div></td><td><span class="priority low">Средний</span></td><td><span class="chip new">Новая</span></td><td>—</td><td>21.11, 12:45</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="detail">
+          <h2>BUZ-412 · Кнопка «Сохранить» уезжает за границу</h2>
+          <div class="meta">
+            <span>Статус: <span class="chip new">Новая</span></span>
+            <span>Исполнитель: Тестер Т.</span>
+            <span>Компонент: формы</span>
+            <span>Создана: сегодня, 11:20</span>
+          </div>
+          <p>На узком экране (ширина меньше 1100 px) кнопка «Сохранить» выходит за правую границу карточки и становится недоступной. Воспроизводится в Chrome и Firefox.</p>
+          <div class="field">
+            <label for="comment">Комментарий к задаче</label>
+            <textarea id="comment" rows="3" placeholder="Добавьте наблюдение, шаги воспроизведения или ссылку…"></textarea>
+          </div>
+          <div class="detail-actions">
+            <button class="btn small">Сохранить</button>
+            <button class="btn small ghost">Отмена</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="comments" hidden>
+        <div class="registry-head">
+          <div>
+            <h1>Замечания по интерфейсу</h1>
+            <p>Собраны расширением Site Commenter · данные в памяти локального стенда</p>
+          </div>
+          <div class="actions">
+            <select id="reg-status" aria-label="Фильтр по статусу">
+              <option value="">Все статусы</option>
+              <option value="new">Новые</option>
+              <option value="in_work">В работе</option>
+              <option value="fixed">Исправлено</option>
+              <option value="rejected">Отклонено</option>
+            </select>
+            <button class="btn ghost small" id="reg-refresh">Обновить</button>
+          </div>
+        </div>
+        <div class="registry-list" id="reg-list"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+  const STATUS_LABELS = { new: "Новое", in_work: "В работе", fixed: "Исправлено", rejected: "Отклонено" };
+  const BASE = "/api/v1/ui-comments";
+
+  const $ = (selector) => document.querySelector(selector);
+  const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[ch]));
+
+  function route() {
+    return window.location.hash.startsWith("#/comments") ? "comments" : "issues";
+  }
+
+  function applyRoute() {
+    const current = route();
+    $("#issues").hidden = current !== "issues";
+    $("#comments").hidden = current !== "comments";
+    document.querySelectorAll(".tabs a").forEach((link) => {
+      link.classList.toggle("is-active", link.dataset.tab === current);
+    });
+    if (current === "comments") loadRegistry();
+  }
+
+  async function loadRegistry() {
+    const list = $("#reg-list");
+    const status = $("#reg-status").value;
+    list.innerHTML = '<div class="empty">Загружаем…</div>';
+    try {
+      const response = await fetch(BASE + (status ? `?status=${status}` : ""), { headers: { Accept: "application/json" } });
+      const payload = await response.json();
+      const items = payload.data || [];
+      if (!items.length) {
+        list.innerHTML = '<div class="empty">Пока нет замечаний. Поставьте первое через кнопку «Замечание».</div>';
+        return;
+      }
+      list.innerHTML = items.map((item) => `
+        <article class="comment" data-id="${escapeHtml(item.id)}">
+          ${item.hasScreenshot
+            ? `<a href="${BASE}/${encodeURIComponent(item.id)}/screenshot" target="_blank" rel="noopener"><img class="shot" src="${BASE}/${encodeURIComponent(item.id)}/screenshot" alt="Снимок замечания"></a>`
+            : '<div class="no-shot">Без снимка</div>'}
+          <div>
+            <h3>${escapeHtml(item.text || "Без текста — смотрите снимок")}</h3>
+            <div class="meta">
+              <span class="chip ${escapeHtml(item.status)}">${escapeHtml(STATUS_LABELS[item.status] || item.status)}</span>
+              <span>${escapeHtml(item.author)}</span>
+              <span>${escapeHtml(item.routeTitle || item.route)}</span>
+              ${item.date ? `<span>${escapeHtml(item.date)}</span>` : ""}
+              <span>${escapeHtml(new Date(item.createdAt).toLocaleString("ru-RU"))}</span>
+              ${item.url ? `<a href="${escapeHtml(item.url)}">Открыть экран</a>` : ""}
+            </div>
+            ${item.resolution ? `<p class="text muted">Ответ: ${escapeHtml(item.resolution)}</p>` : ""}
+            <div class="controls">
+              <select data-role="status">
+                ${Object.entries(STATUS_LABELS).map(([value, label]) =>
+                  `<option value="${value}"${item.status === value ? " selected" : ""}>${label}</option>`).join("")}
+              </select>
+              <textarea data-role="resolution" rows="2" placeholder="Ответ модератора…">${escapeHtml(item.resolution)}</textarea>
+              <button class="btn small" data-role="save">Сохранить</button>
+              <button class="btn small ghost" data-role="delete">Удалить</button>
+            </div>
+          </div>
+        </article>`).join("");
+    } catch (error) {
+      list.innerHTML = `<div class="empty">Не удалось загрузить: ${escapeHtml(error.message)}</div>`;
+    }
+  }
+
+  $("#reg-list").addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-role]");
+    if (!button) return;
+    const card = button.closest(".comment");
+    const id = card.dataset.id;
+    const role = button.dataset.role;
+    try {
+      if (role === "delete") {
+        if (!confirm("Удалить замечание?")) return;
+        await fetch(`${BASE}/${encodeURIComponent(id)}`, { method: "DELETE" });
+      } else {
+        const status = card.querySelector('[data-role="status"]').value;
+        const resolution = card.querySelector('[data-role="resolution"]').value;
+        await fetch(`${BASE}/${encodeURIComponent(id)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, resolution }),
+        });
+      }
+      loadRegistry();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+  $("#reg-status").addEventListener("change", loadRegistry);
+  $("#reg-refresh").addEventListener("click", loadRegistry);
+  window.addEventListener("hashchange", applyRoute);
+  applyRoute();
+</script>
+</body>
+</html>
