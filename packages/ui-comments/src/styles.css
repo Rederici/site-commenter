@@ -297,6 +297,18 @@
 .uic-error { font-size: 11.5px; color: var(--uic-danger); }
 
 .uic-context-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 11px; color: var(--uic-muted); }
+.uic-context-path {
+  color: var(--uic-accent, #2f6fed);
+  text-decoration: none;
+}
+.uic-context-path:hover { text-decoration: underline; }
+.uic-description-field { display: block; }
+.uic-description-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 11.5px;
+  color: var(--uic-muted);
+}
 .uic-tag { padding: 1px 7px; border-radius: 999px; background: var(--uic-soft); color: var(--uic-muted); font-size: 10.5px; }
 .uic-mono { font-family: var(--uic-mono); }
 .uic-muted { color: var(--uic-muted); }

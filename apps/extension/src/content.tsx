@@ -189,12 +189,11 @@ function ExtensionApp() {
         },
         labels: {
           title: "Замечание → задача YouTrack",
-          placeholder: "Подробности и шаги воспроизведения (необязательно)",
+          placeholder: "Подробности и шаги воспроизведения",
           submit: "Создать задачу",
           sending: "Создаём задачу…",
           sent: "Задача создана",
           listLink: "Задачи в YouTrack",
-          shotOnlyHint: "Можно не писать — снимок попадёт в задачу",
         },
         submitNote: settings.projectShortName ? (
           <>

@@ -87,6 +87,8 @@ export function UiCommentsWidget() {
 
   const titleRequired = Boolean(titleField) && titleField?.required !== false;
   const titleMissing = titleRequired && !title.trim();
+  const descriptionOptional = withShot || annotations.length > 0;
+  const descriptionRequired = !descriptionOptional;
 
   const list = useCommentsList(api, {}, `${storageKey}:list`);
   const { reload } = list;
@@ -323,13 +325,8 @@ export function UiCommentsWidget() {
     }
   };
 
-  const contextLine = [
-    context.routeTitle || context.route,
-    context.channelName,
-    context.dateLabel || context.date,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const contextTitle = context.routeTitle || context.route;
+  const contextPath = context.route && context.route !== contextTitle ? context.route : "";
 
   if (!open) {
     return (
@@ -377,7 +374,30 @@ export function UiCommentsWidget() {
           <header className="uic-head">
             <div>
               <strong>{labels.title}</strong>
-              {contextLine && <div className="uic-context">{contextLine}</div>}
+              {contextTitle && (
+                <div className="uic-context">
+                  <span>{contextTitle}</span>
+                  {contextPath && (
+                    <>
+                      {" ("}
+                      <a
+                        className="uic-context-path uic-mono"
+                        href={context.url || context.route}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={context.url || context.route}
+                      >
+                        {contextPath}
+                      </a>
+                      {")"}
+                    </>
+                  )}
+                  {context.channelName && <span> · {context.channelName}</span>}
+                  {(context.dateLabel || context.date) && (
+                    <span> · {context.dateLabel || context.date}</span>
+                  )}
+                </div>
+              )}
             </div>
             <button
               className="uic-icon"
@@ -431,27 +451,33 @@ export function UiCommentsWidget() {
                 />
               </label>
             )}
-            <textarea
-              className="uic-input uic-textarea"
-              rows={4}
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder={labels.placeholder}
-              autoFocus={!annotating && !titleField}
-            />
+            <label className="uic-description-field">
+              <span className="uic-description-label">
+                {labels.description}
+                {descriptionRequired && <span className="uic-required">*</span>}
+              </span>
+              <textarea
+                className="uic-input uic-textarea"
+                rows={4}
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder={
+                  descriptionOptional
+                    ? `${labels.placeholder} (${labels.optional})`
+                    : labels.placeholder
+                }
+                autoFocus={!annotating && !titleField}
+              />
+            </label>
             {shotWarning && <div className="uic-note">{shotWarning}</div>}
-            {!text.trim() && (withShot || annotations.length > 0) && (
-              <div className="uic-hint">{labels.shotOnlyHint}</div>
-            )}
             {flash && <div className="uic-flash">{flash}</div>}
             {error && <div className="uic-error">{error}</div>}
             {submitNote && <div className="uic-submit-note">{submitNote}</div>}
-            <div className="uic-context-line">
-              <span>
-                Экран: <span className="uic-mono">{context.route || "/"}</span>
-              </span>
-              {screenCount > 0 && <span className="uic-tag">на экране уже {screenCount}</span>}
-            </div>
+            {screenCount > 0 && (
+              <div className="uic-context-line">
+                <span className="uic-tag">на экране уже {screenCount}</span>
+              </div>
+            )}
           </div>
 
           <footer className="uic-foot">

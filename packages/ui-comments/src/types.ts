@@ -88,6 +88,8 @@ export type UiCommentsContext = {
 export type UiCommentsLabels = {
   fab: string;
   title: string;
+  description: string;
+  optional: string;
   placeholder: string;
   submit: string;
   saving: string;

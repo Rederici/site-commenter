@@ -81,6 +81,8 @@ export const STATUS_ORDER: UiCommentStatus[] = ["new", "in_work", "fixed", "reje
 export const DEFAULT_LABELS: UiCommentsLabels = {
   fab: "Замечание",
   title: "Замечание по экрану",
+  description: "Описание",
+  optional: "необязательно",
   placeholder: "Что не так на этом экране? Что ожидали увидеть?",
   submit: "Отправить",
   saving: "Сохраняем…",
