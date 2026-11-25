@@ -20,7 +20,7 @@ export const DEFAULT_SETTINGS: YouTrackSettings = {
   sites: [...__SITECOMMENTER_DEFAULT_SITES__],
 };
 
-export const YOUTRACK_CLIENT_ID = "test-sitecommenter";
+export const YOUTRACK_CLIENT_ID = __SITECOMMENTER_YOUTRACK_CLIENT_ID__;
 export const YOUTRACK_SCOPE = "YouTrack";
 export const TITLE_MAX_LENGTH = 120;
 

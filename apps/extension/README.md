@@ -18,6 +18,7 @@ npm run build:extension     # → apps/extension/dist
 | Переменная | Что задаёт |
 |---|---|
 | `SITECOMMENTER_YOUTRACK_URL` | инстанс YouTrack, куда уходят задачи |
+| `SITECOMMENTER_YOUTRACK_CLIENT_ID` | публичный `client_id` OAuth-клиента |
 | `SITECOMMENTER_DEFAULT_SITES` | домены по умолчанию для попапа, через запятую |
 
 Переменные окружения важнее `.env`. Без `.env` собирается нейтральный
@@ -68,7 +69,7 @@ placeholder (`yt.example.com` / `todo.example.com`), а сборка преду�
 ## Текущая конфигурация
 
 - YouTrack: `SITECOMMENTER_YOUTRACK_URL` из `.env`
-- OAuth client ID: **test-sitecommenter**
+- OAuth client ID: `SITECOMMENTER_YOUTRACK_CLIENT_ID` из `.env`
 - проект: **не выбран по умолчанию**, выбирается в popup
 - тип: **Bug** по умолчанию, если он есть в проекте; остальные значения
   загружаются из YouTrack
@@ -76,8 +77,8 @@ placeholder (`yt.example.com` / `todo.example.com`), а сборка преду�
 - заголовок: обязательный, до 120 символов
 - описание: необязательное, если приложен снимок
 
-Чтобы изменить URL или список сайтов, задайте их в `.env` и пересоберите
-расширение. Client ID меняется в `YOUTRACK_CLIENT_ID` в `src/youtrack-config.ts`.
+Чтобы изменить URL, client ID или список сайтов, задайте их в `.env` и
+пересоберите расширение.
 
 ## OAuth
 
@@ -90,6 +91,9 @@ placeholder (`yt.example.com` / `todo.example.com`), а сборка преду�
 
 ID расширения фиксируется полем `key` в `manifest.json`; при смене ключа
 redirect URI нужно обновить в YouTrack. Публикация в Store не требуется.
+Сам ID нигде не захардкожен: redirect вычисляется через
+`chrome.identity.getRedirectURL()`, а `key` задаёт стабильный ID, чтобы URI
+не менялся между сборками.
 
 Client secret для публичного PKCE-клиента не нужен. Если инстанс потребует
 секрет, его нельзя безопасно хранить в расширении — понадобится небольшой
@@ -101,7 +105,7 @@ backend, который обменивает код на токен.
 |---|---|
 | Домены, на которых работает попап | popup → «Где работает попап» (или `.env`) |
 | YouTrack URL | `.env` → `SITECOMMENTER_YOUTRACK_URL` |
-| OAuth client ID | `src/youtrack-config.ts` |
+| OAuth client ID | `.env` → `SITECOMMENTER_YOUTRACK_CLIENT_ID` |
 | Проект и тип задачи | popup расширения |
 | Горячая клавиша | `manifest.json` → `commands` |
 

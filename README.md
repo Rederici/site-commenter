@@ -83,7 +83,7 @@ export function App() {
 ## Расширение Chrome
 
 ```bash
-cp .env.example .env        # YouTrack URL и домены по умолчанию
+cp .env.example .env        # YouTrack URL, client ID и домены по умолчанию
 npm run build:extension     # → apps/extension/dist
 ```
 

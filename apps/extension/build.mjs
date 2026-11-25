@@ -48,6 +48,15 @@ function readUrl(name, fallback) {
   return raw.replace(/\/+$/, "");
 }
 
+function readText(name, fallback) {
+  const raw = String(env[name] || "").trim();
+  if (!raw) {
+    console.warn(`  ${name} не задан, используется ${fallback}`);
+    return fallback;
+  }
+  return raw;
+}
+
 function readSiteList(name, fallback) {
   const raw = String(env[name] || "").trim();
   const sites = raw
@@ -62,6 +71,7 @@ function readSiteList(name, fallback) {
 }
 
 const youtrackUrl = readUrl("SITECOMMENTER_YOUTRACK_URL", "https://yt.example.com");
+const youtrackClientId = readText("SITECOMMENTER_YOUTRACK_CLIENT_ID", "site-commenter");
 const defaultSites = readSiteList("SITECOMMENTER_DEFAULT_SITES", ["todo.example.com"]);
 
 function loadEsbuild() {
@@ -87,6 +97,7 @@ const shared = {
   define: {
     "process.env.NODE_ENV": '"production"',
     __SITECOMMENTER_YOUTRACK_URL__: JSON.stringify(youtrackUrl),
+    __SITECOMMENTER_YOUTRACK_CLIENT_ID__: JSON.stringify(youtrackClientId),
     __SITECOMMENTER_DEFAULT_SITES__: JSON.stringify(defaultSites),
   },
   logLevel: "warning",
