@@ -194,15 +194,10 @@ function buildContext(): UiCommentsContext {
   const hash = window.location.hash.replace(/^#/, "");
   const [hashPath = ""] = hash.split("?");
   const route = hashPath.startsWith("/") ? hashPath : window.location.pathname;
-  const params = new URLSearchParams(window.location.search);
-  const date = params.get("date") || "";
   return {
     route: route || "/",
     routeTitle: document.title || route,
     url: window.location.href,
-    channelId: params.get("channel") || "",
-    date: date || undefined,
-    dateLabel: date ? date.split("-").reverse().join(".") : undefined,
   };
 }
 
