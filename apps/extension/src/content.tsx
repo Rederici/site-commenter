@@ -171,6 +171,8 @@ function ExtensionApp() {
   }, []);
 
   const context = useMemo<UiCommentsContext>(() => buildContext(), [version]);
+  const projectMissingNote = "Проект не выбран — откройте настройки расширения.";
+  const projectMissing = !settings.projectShortName;
 
   return (
     <UiCommentsProvider
@@ -219,8 +221,9 @@ function ExtensionApp() {
             , тип <strong>{settings.issueType || "—"}</strong>.
           </>
         ) : (
-          <>Проект не выбран — откройте настройки расширения.</>
+          <>{projectMissingNote}</>
         ),
+        submitBlocked: projectMissing ? projectMissingNote : undefined,
         onSent: (comment) => {
           console.debug("youtrack: создана задача", comment.id);
         },

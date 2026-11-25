@@ -43,6 +43,11 @@ export type UiCommentsConfig = {
   registryHref?: string;
   /** Пояснение над кнопкой отправки: куда и что будет создано. */
   submitNote?: ReactNode;
+  /**
+   * Причина, по которой отправка недоступна. Пока строка задана, кнопка
+   * «Отправить» заблокирована, а причина показывается в подсказке.
+   */
+  submitBlocked?: string;
   /** Ссылка на экран из замечания. По умолчанию — сохранённый адрес. */
   screenHref?: (comment: UiComment) => string;
   /** Ссылка на конкретное замечание для чата/агента. */
@@ -61,6 +66,7 @@ export type ResolvedUiCommentsConfig = {
   enabled: boolean;
   registryHref: string;
   submitNote?: ReactNode;
+  submitBlocked?: string;
   titleField?: UiCommentsConfig["titleField"];
   screenHref: (comment: UiComment) => string;
   commentHref: (comment: UiComment) => string;
@@ -122,6 +128,7 @@ export function UiCommentsProvider({ config, children }: { config: UiCommentsCon
       enabled: config.enabled !== false,
       registryHref: config.registryHref || "#/comments",
       submitNote: config.submitNote,
+      submitBlocked: config.submitBlocked,
       titleField: config.titleField,
       screenHref: config.screenHref || ((comment) => comment.url || comment.route || "#"),
       commentHref: config.commentHref || ((comment) => `#/comments?comment=${encodeURIComponent(comment.id)}`),

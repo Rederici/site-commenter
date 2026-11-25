@@ -40,6 +40,7 @@ export function UiCommentsWidget() {
     enabled,
     registryHref,
     submitNote,
+    submitBlocked,
     titleField,
     onSent,
   } = useUiCommentsConfig();
@@ -260,6 +261,10 @@ export function UiCommentsWidget() {
 
   const submit = async () => {
     if (busy) return;
+    if (submitBlocked) {
+      setError(submitBlocked);
+      return;
+    }
     if (titleMissing) {
       setError("Укажите заголовок");
       return;
@@ -497,7 +502,13 @@ export function UiCommentsWidget() {
             <button
               className="uic-btn uic-btn-primary"
               onClick={() => void submit()}
-              disabled={busy || titleMissing || (!text.trim() && !withShot && annotations.length === 0)}
+              title={submitBlocked || undefined}
+              disabled={
+                busy ||
+                Boolean(submitBlocked) ||
+                titleMissing ||
+                (!text.trim() && !withShot && annotations.length === 0)
+              }
             >
               {busy ? stage || labels.saving : labels.submit}
             </button>
