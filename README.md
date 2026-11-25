@@ -91,8 +91,10 @@ npm run build:extension     # → apps/extension/dist
 
 В расширении снимок делает браузер (`chrome.tabs.captureVisibleTab`), поэтому
 в кадр попадают видео, canvas и iframe, а панель замечания на момент съёмки
-скрывается. Если на странице уже есть встроенный модуль, расширение не ставит
-второй виджет (метка `data-ui-comments-inline`).
+скрывается. Текущая сборка расширения создаёт задачу в YouTrack (проект `SC`,
+тип `Bug`); подробности — [`apps/extension/README.md`](apps/extension/README.md).
+Если на странице уже есть встроенный модуль, расширение не ставит второй
+виджет (метка `data-ui-comments-inline`).
 
 ## Демо
 

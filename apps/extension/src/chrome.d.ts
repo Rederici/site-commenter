@@ -14,7 +14,7 @@ declare namespace chrome {
     const onMessage: {
       addListener(
         callback: (
-          message: { type?: string; count?: number },
+          message: { type?: string; count?: number; payload?: unknown },
           sender: MessageSender,
           sendResponse: (response?: unknown) => void
         ) => boolean | void
@@ -22,10 +22,28 @@ declare namespace chrome {
     };
   }
 
+  namespace identity {
+    function launchWebAuthFlow(
+      details: { url: string; interactive?: boolean },
+      callback: (redirectUrl?: string) => void
+    ): void;
+    function getRedirectURL(path?: string): string;
+  }
+
+  namespace storage {
+    namespace local {
+      function get(keys?: string | string[] | Record<string, unknown> | null): Promise<Record<string, unknown>>;
+      function set(items: Record<string, unknown>): Promise<void>;
+      function remove(keys: string | string[]): Promise<void>;
+    }
+  }
+
   namespace tabs {
     interface Tab {
       id?: number;
+      url?: string;
     }
+    function create(properties: { url: string }): Promise<Tab>;
     function captureVisibleTab(
       windowId: number | undefined,
       options: { format: "png" | "jpeg"; quality?: number },

@@ -3,10 +3,11 @@
   "name": "Site Commenter",
   "short_name": "SiteComment",
   "version": "0.1.0",
-  "description": "Замечания по интерфейсу: разметка поверх экрана, снимок и отправка на сервер",
+  "description": "Замечания по интерфейсу: разметка, снимок и создание задачи в YouTrack",
   "minimum_chrome_version": "109",
   "permissions": [
     "activeTab",
+    "identity",
     "storage"
   ],
   "host_permissions": [
@@ -40,12 +41,13 @@
   "content_scripts": [
     {
       "matches": [
-        "https://your-app.example.com/*"
+        "https://todo.example.com/*"
       ],
       "js": [
         "content.js"
       ],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlM3qb0pYIOsGtuEpXwNLNqYipBjzFMceGvGT2B5UuDLCVeO2zdpyg6btByen4SGutsZwA6wq3tbvFbx4rVOnjzYywjHTjjcn5AxElbTgq6YMB3Ndc3UCxstr+BQ+NfTOAGjLLLl7szTxTLOkWejuNBVqpHGsgfIyd0qP2BH4puV5zNQanl9vlve1Go02+n323ka3elR8V0wgxw9Gn2W+EsLc9hN5m7QZKk7kQax+wwNOYa2Isg+xZA+zrb2hHV4iOdDDWl1ujJeQb45XJZzMkfFh6Nh58ScThZAIIhys5BOyziSiCiFGg1DKAtNWSb1gZ8EwNqqh3a9VLfLVM3+9pQIDAQAB"
 }

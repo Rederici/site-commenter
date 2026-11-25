@@ -267,6 +267,15 @@
 
 .uic-note { font-size: 11.5px; color: var(--uic-warn); }
 .uic-hint { font-size: 11.5px; color: var(--uic-muted); }
+.uic-submit-note {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid #dbe7ff;
+  border-radius: 8px;
+  background: #f7faff;
+  color: #344054;
+  font-size: 11.5px;
+}
 .uic-flash { font-size: 11.5px; color: var(--uic-ok); }
 .uic-error { font-size: 11.5px; color: var(--uic-danger); }
 

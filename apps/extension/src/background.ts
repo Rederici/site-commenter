@@ -2,8 +2,11 @@
  * Service worker расширения.
  *
  * Умеет три вещи: отдать нативный снимок активной вкладки, открыть окно
- * замечания по кнопке/горячей клавише и показать счётчик на иконке.
+ * замечания по кнопке/горячей клавише и создать задачу в YouTrack.
  */
+
+import type { UiCommentInput } from "@sitecommenter/ui-comments";
+import { createTask } from "./youtrack";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "ui-comments:capture") {
@@ -16,6 +19,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ dataUrl });
     });
     return true; // ответ асинхронный
+  }
+
+  if (message?.type === "youtrack:create") {
+    const input = message.payload as UiCommentInput;
+    createTask(input)
+      .then((issue) => sendResponse({ ok: true, issue }))
+      .catch((error: unknown) =>
+        sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
   }
 
   if (message?.type === "ui-comments:badge") {

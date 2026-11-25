@@ -1,9 +1,9 @@
 /**
  * Content script: монтирует окно замечаний в shadow root страницы.
  *
- * Модуль замечаний берётся из клиента — тот же код, что и во встроенной
- * версии. Отличия две: снимок нативный (nativeCapture) и контекст экрана
- * читается из URL, а не из роутера приложения.
+ * Модуль замечаний берётся из @sitecommenter/ui-comments. Отличия от встроенной
+ * версии: снимок нативный (nativeCapture), контекст читается из URL, а
+ * отправка создаёт задачу в YouTrack через background.
  */
 
 import { createRoot } from "react-dom/client";
@@ -11,19 +11,25 @@ import { useEffect, useMemo, useState } from "react";
 import {
   UiCommentsProvider,
   UiCommentsWidget,
-  createUiCommentsApi,
-  UI_COMMENTS_CHANGED_EVENT,
   UI_COMMENTS_OPEN_EVENT,
   type UiComment,
+  type UiCommentInput,
+  type UiCommentsApi,
   type UiCommentsContext,
   type UiCommentsUser,
 } from "@sitecommenter/ui-comments";
 import styles from "@sitecommenter/ui-comments/styles.css";
 import { HOST_ID, nativeCapture } from "./nativeCapture";
+import { DEFAULT_SETTINGS, issuesUrl } from "./youtrack-config";
 
-const API_BASE = "/api/v1/ui-comments";
 const INLINE_MARKER = "data-ui-comments-inline";
 const LOCATION_EVENT = "ui-comments:location";
+
+const user: UiCommentsUser = {
+  username: "youtrack",
+  name: "Тестировщик",
+  role: "YouTrack",
+};
 
 if (!document.getElementById(HOST_ID) && !document.documentElement.hasAttribute(INLINE_MARKER)) {
   mount();
@@ -44,38 +50,58 @@ function mount() {
   createRoot(container).render(<ExtensionApp />);
 }
 
+type CreateResponse = {
+  ok?: boolean;
+  issue?: { id?: string; idReadable?: string; url?: string };
+  error?: string;
+};
+
 function ExtensionApp() {
-  const [me, setMe] = useState<UiCommentsUser | null>(null);
-  const [ready, setReady] = useState(false);
   const [version, setVersion] = useState(0);
 
-  const api = useMemo(() => createUiCommentsApi({ basePath: API_BASE }), []);
+  const api = useMemo<UiCommentsApi>(
+    () => ({
+      async create(input: UiCommentInput): Promise<UiComment> {
+        const response = (await chrome.runtime.sendMessage({
+          type: "youtrack:create",
+          payload: input,
+        })) as CreateResponse;
 
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/v1/auth/me", { credentials: "same-origin", headers: { Accept: "application/json" } })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((payload: { data?: { user?: Record<string, unknown> } } | null) => {
-        if (!alive) return;
-        const user = payload?.data?.user;
-        if (user) {
-          const permissions = Array.isArray(user.permissions) ? (user.permissions as string[]) : [];
-          setMe({
-            username: String(user.username || ""),
-            name: String(user.full_name || user.username || ""),
-            role: String(user.role_name || user.role || ""),
-            isAdmin: permissions.includes("*") || permissions.includes("admin.write"),
-          });
+        if (!response?.ok || !response.issue) {
+          throw new Error(response?.error || "Не удалось создать задачу в YouTrack");
         }
-        setReady(true);
-      })
-      .catch(() => {
-        if (alive) setReady(true);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+
+        const issue = response.issue;
+        return {
+          id: issue.idReadable || issue.id || "issue",
+          author: user.name || user.username,
+          authorUsername: user.username,
+          role: user.role || "",
+          text: input.text,
+          status: "new",
+          route: input.route,
+          routeTitle: input.routeTitle,
+          url: input.url,
+          channelId: input.channelId || "",
+          channelName: input.channelName || "",
+          date: input.date || "",
+          viewportWidth: input.viewportWidth || 0,
+          viewportHeight: input.viewportHeight || 0,
+          hasScreenshot: Boolean(input.screenshot),
+          screenshotType: input.screenshot ? "image/jpeg" : "",
+          resolution: "",
+          resolvedBy: "",
+          resolvedAt: "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      },
+      async list(): Promise<UiComment[]> {
+        return [];
+      },
+    }),
+    []
+  );
 
   useEffect(() => {
     const bump = () => setVersion((value) => value + 1);
@@ -90,50 +116,45 @@ function ExtensionApp() {
   }, []);
 
   useEffect(() => {
-    if (!me) return;
-    let alive = true;
-    const update = () => {
-      api
-        .list()
-        .then((items) => {
-          if (!alive) return;
-          const count = items.filter((item) => item.status === "new" || item.status === "in_work").length;
-          void chrome.runtime.sendMessage({ type: "ui-comments:badge", count });
-        })
-        .catch(() => {});
-    };
-    update();
-    window.addEventListener(UI_COMMENTS_CHANGED_EVENT, update);
-    return () => {
-      alive = false;
-      window.removeEventListener(UI_COMMENTS_CHANGED_EVENT, update);
-    };
-  }, [me, api]);
-
-  useEffect(() => {
-    const open = () => window.dispatchEvent(new Event(UI_COMMENTS_OPEN_EVENT));
     const listener = (message: { type?: string }) => {
-      if (message?.type === "ui-comments:open") open();
+      if (message?.type === "ui-comments:open") {
+        window.dispatchEvent(new Event(UI_COMMENTS_OPEN_EVENT));
+      }
     };
     chrome.runtime.onMessage.addListener(listener);
   }, []);
 
   const context = useMemo<UiCommentsContext>(() => buildContext(), [version]);
 
-  if (!ready || !me) return null;
-
   return (
     <UiCommentsProvider
       config={{
         api,
-        user: me,
+        user,
         context,
         capture: nativeCapture,
-        storageKey: "x3.ui-comments",
-        registryHref: buildRegistryHref(),
-        onSent: (comment: UiComment) => {
-          // Счётчик обновится по событию из модуля; здесь только журнал.
-          console.debug("ui-comments: отправлено", comment.id);
+        storageKey: "youtrack.ui-comments",
+        registryHref: issuesUrl(DEFAULT_SETTINGS),
+        labels: {
+          title: "Замечание → задача YouTrack",
+          placeholder: "Что не так? Это станет описанием задачи",
+          submit: "Создать задачу",
+          sending: "Создаём задачу…",
+          sent: "Задача создана",
+          listLink: "Задачи в YouTrack",
+          shotOnlyHint: "Можно не писать — снимок попадёт в задачу",
+        },
+        submitNote: (
+          <>
+            Задача будет создана в проекте{" "}
+            <strong>
+              {DEFAULT_SETTINGS.projectName} ({DEFAULT_SETTINGS.projectShortName})
+            </strong>
+            , тип <strong>{DEFAULT_SETTINGS.issueType}</strong>.
+          </>
+        ),
+        onSent: (comment) => {
+          console.debug("youtrack: создана задача", comment.id);
         },
       }}
     >
@@ -142,8 +163,7 @@ function ExtensionApp() {
   );
 }
 
-// Приложение на hash-роутере: путь берём из #/planner, канал и дату — из query.
-// В проекте с обычными путями используется location.pathname.
+// Приложение на обычных путях: маршрут — pathname. Hash оставлен для стенда.
 function buildContext(): UiCommentsContext {
   const hash = window.location.hash.replace(/^#/, "");
   const [hashPath = ""] = hash.split("?");
@@ -158,11 +178,6 @@ function buildContext(): UiCommentsContext {
     date: date || undefined,
     dateLabel: date ? date.split("-").reverse().join(".") : undefined,
   };
-}
-
-function buildRegistryHref(): string {
-  const query = window.location.search || "";
-  return `${window.location.origin}/${query}#/comments`;
 }
 
 // SPA меняет адрес через history.pushState — hashchange при этом не срабатывает.

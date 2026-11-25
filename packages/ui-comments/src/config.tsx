@@ -33,6 +33,8 @@ export type UiCommentsConfig = {
   enabled?: boolean;
   /** Куда ведёт ссылка «Все замечания». По умолчанию `#/comments`. */
   registryHref?: string;
+  /** Пояснение над кнопкой отправки: куда и что будет создано. */
+  submitNote?: ReactNode;
   /** Ссылка на экран из замечания. По умолчанию — сохранённый адрес. */
   screenHref?: (comment: UiComment) => string;
   /** Ссылка на конкретное замечание для чата/агента. */
@@ -50,6 +52,7 @@ export type ResolvedUiCommentsConfig = {
   annotations: boolean;
   enabled: boolean;
   registryHref: string;
+  submitNote?: ReactNode;
   screenHref: (comment: UiComment) => string;
   commentHref: (comment: UiComment) => string;
   labels: UiCommentsLabels;
@@ -107,6 +110,7 @@ export function UiCommentsProvider({ config, children }: { config: UiCommentsCon
       annotations: config.annotations !== false,
       enabled: config.enabled !== false,
       registryHref: config.registryHref || "#/comments",
+      submitNote: config.submitNote,
       screenHref: config.screenHref || ((comment) => comment.url || comment.route || "#"),
       commentHref: config.commentHref || ((comment) => `#/comments?comment=${encodeURIComponent(comment.id)}`),
       labels: {

@@ -39,6 +39,7 @@ export function UiCommentsWidget() {
     annotations: annotationsEnabled,
     enabled,
     registryHref,
+    submitNote,
     onSent,
   } = useUiCommentsConfig();
   const openKey = `${storageKey}.open`;
@@ -410,6 +411,7 @@ export function UiCommentsWidget() {
             )}
             {flash && <div className="uic-flash">{flash}</div>}
             {error && <div className="uic-error">{error}</div>}
+            {submitNote && <div className="uic-submit-note">{submitNote}</div>}
             <div className="uic-context-line">
               <span>
                 Экран: <span className="uic-mono">{context.route || "/"}</span>
