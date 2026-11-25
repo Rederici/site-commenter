@@ -62,9 +62,13 @@ function ExtensionApp() {
   const api = useMemo<UiCommentsApi>(
     () => ({
       async create(input: UiCommentInput): Promise<UiComment> {
+        const payload: UiCommentInput = {
+          ...input,
+          routeTitle: document.title.trim() || input.routeTitle,
+        };
         const response = (await chrome.runtime.sendMessage({
           type: "youtrack:create",
-          payload: input,
+          payload,
         })) as CreateResponse;
 
         if (!response?.ok || !response.issue) {

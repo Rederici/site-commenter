@@ -74,10 +74,12 @@ function buildSummary(input: UiCommentInput): string {
 }
 
 function buildDescription(input: UiCommentInput): string {
+  const title = input.routeTitle?.trim() || "";
+  const route = input.route?.trim() || "";
+  const screen = title && title !== route ? `${title} (${route})` : route || title;
+
   const context = [
-    input.routeTitle || input.route
-      ? `Экран: ${input.routeTitle || ""}${input.route ? ` (${input.route})` : ""}`
-      : "",
+    screen ? `Экран: ${screen}` : "",
     input.url ? `URL: ${input.url}` : "",
     input.channelName ? `Канал: ${input.channelName}` : "",
     input.date ? `Дата: ${input.date}` : "",
