@@ -1,5 +1,6 @@
 export type YouTrackSettings = {
   url: string;
+  projectId?: string;
   projectName: string;
   projectShortName: string;
   issueType: string;
@@ -7,8 +8,9 @@ export type YouTrackSettings = {
 
 export const DEFAULT_SETTINGS: YouTrackSettings = {
   url: "https://yt.example.com",
-  projectName: "Site Commenter",
-  projectShortName: "SC",
+  projectId: "",
+  projectName: "",
+  projectShortName: "",
   issueType: "Bug",
 };
 
@@ -19,23 +21,40 @@ export const TITLE_MAX_LENGTH = 120;
 const SETTINGS_KEY = "youtrack.settings";
 
 /**
- * Пока это константы. Позже сюда придёт экран настроек: проект и тип задачи
- * будут читаться из chrome.storage, а попап — показывать выбранные значения.
+ * Настройки хранятся в chrome.storage.local. Пока проект не выбран, задачи не
+ * создаются: это защита от случайной отправки не в тот проект.
  */
 export async function loadSettings(): Promise<YouTrackSettings> {
   try {
     const stored = await chrome.storage.local.get(SETTINGS_KEY);
     const value = stored[SETTINGS_KEY];
+    const settings = typeof value === "object" && value ? (value as Partial<YouTrackSettings>) : {};
     return {
       ...DEFAULT_SETTINGS,
-      ...(typeof value === "object" && value ? (value as Partial<YouTrackSettings>) : {}),
-      url: String((value as Partial<YouTrackSettings> | undefined)?.url || DEFAULT_SETTINGS.url).replace(/\/+$/, ""),
+      ...settings,
+      url: String(settings.url || DEFAULT_SETTINGS.url).replace(/\/+$/, ""),
+      projectId: String(settings.projectId || ""),
+      projectName: String(settings.projectName || ""),
+      projectShortName: String(settings.projectShortName || ""),
+      issueType: String(settings.issueType || DEFAULT_SETTINGS.issueType),
     };
   } catch {
     return DEFAULT_SETTINGS;
   }
 }
 
+export async function saveSettings(patch: Partial<YouTrackSettings>): Promise<YouTrackSettings> {
+  const current = await loadSettings();
+  const next: YouTrackSettings = { ...current, ...patch };
+  await chrome.storage.local.set({ [SETTINGS_KEY]: next });
+  return next;
+}
+
+export async function clearSettings(): Promise<void> {
+  await chrome.storage.local.remove(SETTINGS_KEY);
+}
+
 export function issuesUrl(settings: YouTrackSettings = DEFAULT_SETTINGS): string {
-  return `${settings.url}/projects/${settings.projectShortName}`;
+  const project = settings.projectShortName || settings.projectId;
+  return project ? `${settings.url}/projects/${project}` : `${settings.url}/projects`;
 }

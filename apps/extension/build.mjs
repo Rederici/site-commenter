@@ -59,7 +59,16 @@ await esbuild.build({
   format: "esm",
 });
 
+await esbuild.build({
+  ...shared,
+  entryPoints: [path.join(here, "src", "popup.ts")],
+  outfile: path.join(dist, "popup.js"),
+  format: "iife",
+});
+
 await copyFile(path.join(here, "manifest.json"), path.join(dist, "manifest.json"));
+await copyFile(path.join(here, "popup.html"), path.join(dist, "popup.html"));
+await copyFile(path.join(here, "popup.css"), path.join(dist, "popup.css"));
 await mkdir(path.join(dist, "icons"), { recursive: true });
 for (const icon of await readdir(path.join(here, "icons"))) {
   if (!icon.endsWith(".png")) continue;

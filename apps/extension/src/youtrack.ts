@@ -3,8 +3,13 @@ import { getAccessToken } from "./oauth";
 import { TITLE_MAX_LENGTH, loadSettings, type YouTrackSettings } from "./youtrack-config";
 
 type Project = { id: string; name?: string; shortName?: string };
-type ProjectField = { id: string; field?: { name?: string } };
+type ProjectField = {
+  id: string;
+  field?: { name?: string };
+  bundle?: { values?: Array<{ name?: string }> };
+};
 type Issue = { id: string; idReadable?: string };
+export type YouTrackUser = { id: string; login: string; name?: string; email?: string };
 
 async function request<T>(token: string, url: string, init: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
@@ -35,6 +40,14 @@ function pickProject(items: Project[], settings: YouTrackSettings): Project | un
 }
 
 async function findProject(token: string, settings: YouTrackSettings): Promise<Project> {
+  if (settings.projectId && settings.projectShortName) {
+    return {
+      id: settings.projectId,
+      name: settings.projectName,
+      shortName: settings.projectShortName,
+    };
+  }
+
   try {
     const items = await request<Project[]>(
       token,
@@ -63,6 +76,62 @@ async function findTypeField(token: string, settings: YouTrackSettings, projectI
   const type = fields.find((field) => field.field?.name === "Type");
   if (!type) throw new Error(`В проекте ${settings.projectShortName} нет поля Type`);
   return type;
+}
+
+export async function getCurrentUser(): Promise<YouTrackUser | null> {
+  try {
+    const settings = await loadSettings();
+    const token = await getAccessToken({ interactive: false });
+    return await request<YouTrackUser>(
+      token,
+      `${settings.url}/api/users/me?fields=id,login,name,email`
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function loginUser(): Promise<YouTrackUser> {
+  const settings = await loadSettings();
+  const token = await getAccessToken();
+  return request<YouTrackUser>(token, `${settings.url}/api/users/me?fields=id,login,name,email`);
+}
+
+export async function fetchProjects(): Promise<Project[]> {
+  const settings = await loadSettings();
+  const token = await getAccessToken({ interactive: false });
+
+  let items: Project[];
+  try {
+    items = await request<Project[]>(
+      token,
+      `${settings.url}/api/admin/projects?fields=id,name,shortName&$top=200`
+    );
+  } catch {
+    items = await request<Project[]>(token, `${settings.url}/api/projects?fields=id,name,shortName&$top=200`);
+  }
+
+  return items.sort((a, b) => (a.name || a.shortName || "").localeCompare(b.name || b.shortName || "", "ru"));
+}
+
+export async function fetchIssueTypes(projectId: string): Promise<string[]> {
+  const settings = await loadSettings();
+  const token = await getAccessToken({ interactive: false });
+
+  try {
+    const fields = await request<ProjectField[]>(
+      token,
+      `${settings.url}/api/admin/projects/${encodeURIComponent(projectId)}/customFields?fields=id,field(name),bundle(values(name))`
+    );
+    const type = fields.find((field) => field.field?.name === "Type");
+    const values = (type?.bundle?.values || [])
+      .map((value) => value.name || "")
+      .filter(Boolean);
+    return values.length ? [...new Set(values)] : ["Bug"];
+  } catch {
+    // Если метаданные проекта недоступны, оставляем рабочий дефолт.
+    return ["Bug"];
+  }
 }
 
 function buildSummary(input: UiCommentInput): string {
@@ -141,6 +210,13 @@ export type CreatedTask = {
 
 export async function createTask(input: UiCommentInput): Promise<CreatedTask> {
   const settings = await loadSettings();
+  if (!settings.projectShortName) {
+    throw new Error("Проект не выбран. Откройте настройки расширения.");
+  }
+  if (!settings.issueType) {
+    throw new Error("Не выбран тип задачи. Откройте настройки расширения.");
+  }
+
   const token = await getAccessToken();
   const project = await findProject(token, settings);
   const typeField = await findTypeField(token, settings, project.id);

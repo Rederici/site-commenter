@@ -152,7 +152,7 @@ async function login(): Promise<StoredAuth> {
   });
 }
 
-export async function getAccessToken(): Promise<string> {
+export async function getAccessToken(options: { interactive?: boolean } = {}): Promise<string> {
   const auth = await readAuth();
   if (auth && auth.expiresAt > Date.now() + 60_000) return auth.accessToken;
 
@@ -170,7 +170,13 @@ export async function getAccessToken(): Promise<string> {
     }
   }
 
+  if (options.interactive === false) throw new Error("Требуется вход в YouTrack");
+
   const next = await login();
   await writeAuth(next);
   return next.accessToken;
+}
+
+export async function logout(): Promise<void> {
+  await chrome.storage.local.remove([AUTH_KEY, PKCE_KEY]);
 }

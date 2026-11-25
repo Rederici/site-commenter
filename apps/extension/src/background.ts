@@ -1,12 +1,19 @@
 /**
  * Service worker расширения.
  *
- * Умеет три вещи: отдать нативный снимок активной вкладки, открыть окно
- * замечания по кнопке/горячей клавише и создать задачу в YouTrack.
+ * Отдаёт нативный снимок вкладки, открывает окно замечания по горячей
+ * клавише, создаёт задачи в YouTrack и обслуживает popup настроек.
  */
 
 import type { UiCommentInput } from "@sitecommenter/ui-comments";
-import { createTask } from "./youtrack";
+import { logout } from "./oauth";
+import {
+  createTask,
+  fetchIssueTypes,
+  fetchProjects,
+  getCurrentUser,
+  loginUser,
+} from "./youtrack";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "ui-comments:capture") {
@@ -27,6 +34,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .then((issue) => sendResponse({ ok: true, issue }))
       .catch((error: unknown) =>
         sendResponse({ ok: false, error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
+  if (message?.type === "youtrack:status") {
+    getCurrentUser()
+      .then((user) => sendResponse({ user }))
+      .catch(() => sendResponse({ user: null }));
+    return true;
+  }
+
+  if (message?.type === "youtrack:login") {
+    loginUser()
+      .then((user) => sendResponse({ user }))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
+  if (message?.type === "youtrack:logout") {
+    logout()
+      .then(() => chrome.storage.local.remove("youtrack.settings"))
+      .then(() => sendResponse({ ok: true }))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
+  if (message?.type === "youtrack:projects") {
+    fetchProjects()
+      .then((projects) => sendResponse({ projects }))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
+  if (message?.type === "youtrack:issue-types") {
+    const payload = message.payload as { projectId?: string } | undefined;
+    if (!payload?.projectId) {
+      sendResponse({ error: "Проект не выбран" });
+      return false;
+    }
+    fetchIssueTypes(payload.projectId)
+      .then((values) => sendResponse({ values }))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
       );
     return true;
   }
@@ -52,8 +108,6 @@ function openOnActiveTab(tab: chrome.tabs.Tab | undefined) {
     });
   }
 }
-
-chrome.action.onClicked.addListener(openOnActiveTab);
 
 chrome.commands.onCommand.addListener((command) => {
   if (command !== "open-comments") return;

@@ -20,7 +20,13 @@ import {
 } from "@sitecommenter/ui-comments";
 import styles from "@sitecommenter/ui-comments/styles.css";
 import { HOST_ID, nativeCapture } from "./nativeCapture";
-import { DEFAULT_SETTINGS, TITLE_MAX_LENGTH, issuesUrl } from "./youtrack-config";
+import {
+  DEFAULT_SETTINGS,
+  TITLE_MAX_LENGTH,
+  issuesUrl,
+  loadSettings,
+  type YouTrackSettings,
+} from "./youtrack-config";
 
 const INLINE_MARKER = "data-ui-comments-inline";
 const LOCATION_EVENT = "ui-comments:location";
@@ -60,6 +66,7 @@ type CreateResponse = {
 
 function ExtensionApp() {
   const [version, setVersion] = useState(0);
+  const [settings, setSettings] = useState<YouTrackSettings>(DEFAULT_SETTINGS);
 
   const api = useMemo<UiCommentsApi>(
     () => ({
@@ -144,6 +151,25 @@ function ExtensionApp() {
     chrome.runtime.onMessage.addListener(listener);
   }, []);
 
+  useEffect(() => {
+    let alive = true;
+    const reload = () => {
+      loadSettings().then((value) => {
+        if (alive) setSettings(value);
+      });
+    };
+    reload();
+
+    const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && changes["youtrack.settings"]) reload();
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => {
+      alive = false;
+      chrome.storage.onChanged.removeListener(listener);
+    };
+  }, []);
+
   const context = useMemo<UiCommentsContext>(() => buildContext(), [version]);
 
   return (
@@ -154,7 +180,7 @@ function ExtensionApp() {
         context,
         capture: nativeCapture,
         storageKey: "youtrack.ui-comments",
-        registryHref: issuesUrl(DEFAULT_SETTINGS),
+        registryHref: issuesUrl(settings),
         titleField: {
           label: "Заголовок",
           placeholder: "Кратко: что не так",
@@ -170,14 +196,16 @@ function ExtensionApp() {
           listLink: "Задачи в YouTrack",
           shotOnlyHint: "Можно не писать — снимок попадёт в задачу",
         },
-        submitNote: (
+        submitNote: settings.projectShortName ? (
           <>
             Задача будет создана в проекте{" "}
             <strong>
-              {DEFAULT_SETTINGS.projectName} ({DEFAULT_SETTINGS.projectShortName})
+              {settings.projectName || settings.projectShortName} ({settings.projectShortName})
             </strong>
-            , тип <strong>{DEFAULT_SETTINGS.issueType}</strong>.
+            , тип <strong>{settings.issueType || "—"}</strong>.
           </>
+        ) : (
+          <>Проект не выбран — откройте настройки расширения.</>
         ),
         onSent: (comment) => {
           console.debug("youtrack: создана задача", comment.id);

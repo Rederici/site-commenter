@@ -31,6 +31,18 @@ declare namespace chrome {
   }
 
   namespace storage {
+    interface StorageChange {
+      oldValue?: unknown;
+      newValue?: unknown;
+    }
+    const onChanged: {
+      addListener(
+        callback: (changes: Record<string, StorageChange>, areaName: "local" | "sync" | "managed" | "session") => void
+      ): void;
+      removeListener(
+        callback: (changes: Record<string, StorageChange>, areaName: "local" | "sync" | "managed" | "session") => void
+      ): void;
+    };
     namespace local {
       function get(keys?: string | string[] | Record<string, unknown> | null): Promise<Record<string, unknown>>;
       function set(items: Record<string, unknown>): Promise<void>;
