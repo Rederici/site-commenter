@@ -204,6 +204,13 @@ function ExtensionApp() {
               target="_blank"
               rel="noreferrer"
               title={issuesUrl(settings)}
+              onClick={(event) => {
+                event.preventDefault();
+                void chrome.runtime.sendMessage({
+                  type: "youtrack:open-url",
+                  payload: { url: issuesUrl(settings) },
+                });
+              }}
             >
               <strong>
                 {settings.projectName || settings.projectShortName} ({settings.projectShortName})

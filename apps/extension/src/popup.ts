@@ -380,6 +380,10 @@ async function init() {
   settings = await loadSettings();
   youtrackLink.href = settings.url;
   youtrackLink.title = settings.url;
+  youtrackLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    void chrome.tabs.create({ url: settings.url });
+  });
   projectSelect.addEventListener("change", () => void onProjectChange());
   typeSelect.addEventListener("change", () => void onTypeChange());
   siteAdd.addEventListener("click", () => void addSite());

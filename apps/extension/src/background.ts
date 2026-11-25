@@ -145,6 +145,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "youtrack:open-url") {
+    const payload = message.payload as { url?: string } | undefined;
+    const url = payload?.url || "";
+    if (!/^https?:\/\//.test(url)) {
+      sendResponse({ error: "Некорректный URL" });
+      return false;
+    }
+    chrome.tabs
+      .create({ url })
+      .then(() => sendResponse({ ok: true }))
+      .catch((error: unknown) =>
+        sendResponse({ error: error instanceof Error ? error.message : String(error) })
+      );
+    return true;
+  }
+
   if (message?.type === "ui-comments:badge") {
     const tabId = sender.tab?.id;
     if (tabId !== undefined) {
