@@ -3,4 +3,5 @@
  */
 declare const __SITECOMMENTER_YOUTRACK_URL__: string;
 declare const __SITECOMMENTER_YOUTRACK_CLIENT_ID__: string;
+declare const __SITECOMMENTER_YOUTRACK_SCOPE__: string;
 declare const __SITECOMMENTER_DEFAULT_SITES__: string[];

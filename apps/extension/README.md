@@ -19,6 +19,7 @@ npm run build:extension     # → apps/extension/dist
 |---|---|
 | `SITECOMMENTER_YOUTRACK_URL` | инстанс YouTrack, куда уходят задачи |
 | `SITECOMMENTER_YOUTRACK_CLIENT_ID` | публичный `client_id` OAuth-клиента |
+| `SITECOMMENTER_YOUTRACK_SCOPE` | scope: `YouTrack` или ID сервиса из Hub (UUID) |
 | `SITECOMMENTER_DEFAULT_SITES` | домены по умолчанию для попапа, через запятую |
 
 Переменные окружения важнее `.env`. Без `.env` собирается нейтральный
@@ -70,6 +71,7 @@ placeholder (`yt.example.com` / `todo.example.com`), а сборка преду�
 
 - YouTrack: `SITECOMMENTER_YOUTRACK_URL` из `.env`
 - OAuth client ID: `SITECOMMENTER_YOUTRACK_CLIENT_ID` из `.env`
+- scope: `SITECOMMENTER_YOUTRACK_SCOPE` из `.env` (по умолчанию `YouTrack`)
 - проект: **не выбран по умолчанию**, выбирается в popup
 - тип: **Bug** по умолчанию, если он есть в проекте; остальные значения
   загружаются из YouTrack
@@ -106,6 +108,7 @@ backend, который обменивает код на токен.
 | Домены, на которых работает попап | popup → «Где работает попап» (или `.env`) |
 | YouTrack URL | `.env` → `SITECOMMENTER_YOUTRACK_URL` |
 | OAuth client ID | `.env` → `SITECOMMENTER_YOUTRACK_CLIENT_ID` |
+| Scope | `.env` → `SITECOMMENTER_YOUTRACK_SCOPE` |
 | Проект и тип задачи | popup расширения |
 | Горячая клавиша | `manifest.json` → `commands` |
 

@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS: YouTrackSettings = {
 };
 
 export const YOUTRACK_CLIENT_ID = __SITECOMMENTER_YOUTRACK_CLIENT_ID__;
-export const YOUTRACK_SCOPE = "YouTrack";
+export const YOUTRACK_SCOPE = __SITECOMMENTER_YOUTRACK_SCOPE__;
 export const TITLE_MAX_LENGTH = 120;
 
 const SETTINGS_KEY = "youtrack.settings";

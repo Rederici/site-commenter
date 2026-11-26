@@ -72,6 +72,7 @@ function readSiteList(name, fallback) {
 
 const youtrackUrl = readUrl("SITECOMMENTER_YOUTRACK_URL", "https://yt.example.com");
 const youtrackClientId = readText("SITECOMMENTER_YOUTRACK_CLIENT_ID", "site-commenter");
+const youtrackScope = readText("SITECOMMENTER_YOUTRACK_SCOPE", "YouTrack");
 const defaultSites = readSiteList("SITECOMMENTER_DEFAULT_SITES", ["todo.example.com"]);
 
 function loadEsbuild() {
@@ -98,6 +99,7 @@ const shared = {
     "process.env.NODE_ENV": '"production"',
     __SITECOMMENTER_YOUTRACK_URL__: JSON.stringify(youtrackUrl),
     __SITECOMMENTER_YOUTRACK_CLIENT_ID__: JSON.stringify(youtrackClientId),
+    __SITECOMMENTER_YOUTRACK_SCOPE__: JSON.stringify(youtrackScope),
     __SITECOMMENTER_DEFAULT_SITES__: JSON.stringify(defaultSites),
   },
   logLevel: "warning",
