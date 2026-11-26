@@ -1,6 +1,6 @@
 {
   "name": "@sitecommenter/extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Chrome extension wrapper for @sitecommenter/ui-comments",
   "type": "module",
@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@sitecommenter/ui-comments": "0.1.0",
+    "@sitecommenter/ui-comments": "0.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

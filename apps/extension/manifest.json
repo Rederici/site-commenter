@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Site Commenter",
   "short_name": "SiteComment",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Замечания по интерфейсу: разметка, снимок и создание задачи в YouTrack",
   "minimum_chrome_version": "109",
   "permissions": [

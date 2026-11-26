@@ -1,6 +1,6 @@
 {
   "name": "@sitecommenter/ui-comments",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "React module: screen annotations, screenshots and UI comments",
   "type": "module",
