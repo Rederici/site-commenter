@@ -118,6 +118,11 @@ export function AnnotationLayer({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={() => setDraft(null)}
+      onKeyDown={(event) => {
+        // Надпись разметки — тоже ввод: пробел и стрелки в ней не должны
+        // управлять видео на странице под слоем. Esc оставляем странице.
+        if (event.key !== "Escape") event.stopPropagation();
+      }}
     >
       <svg className="uic-anno-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         {annotations.map((item) => (

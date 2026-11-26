@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import type { Annotation, AnnotationTool, UiComment } from "./types";
 import { useUiCommentsConfig } from "./config";
 import { useCommentsList } from "./useCommentsList";
@@ -19,6 +26,14 @@ function clampFabPosition(x: number, y: number, width = 160, height = 40) {
     x: Math.min(Math.max(8, x), Math.max(8, window.innerWidth - width - 8)),
     y: Math.min(Math.max(8, y), Math.max(8, window.innerHeight - height - 8)),
   };
+}
+
+// Клавиши внутри окна замечаний остаются в нём: виджет живёт в shadow root,
+// и на странице пробел, стрелки или запятая иначе управляют видео, пока
+// оператор печатает заголовок или описание. Esc пропускаем — он сбрасывает
+// выбранный инструмент разметки.
+function keepKeysInside(event: ReactKeyboardEvent) {
+  if (event.key !== "Escape") event.stopPropagation();
 }
 
 /**
@@ -340,6 +355,7 @@ export function UiCommentsWidget() {
         className="uic-root"
         data-ui-comment-skip=""
         style={fabPos ? { left: fabPos.x, top: fabPos.y, right: "auto", bottom: "auto" } : undefined}
+        onKeyDown={keepKeysInside}
       >
         <button
           className={`uic-fab${dragging ? " is-dragging" : ""}`}
@@ -375,7 +391,7 @@ export function UiCommentsWidget() {
         />
       )}
 
-      <div className="uic-root" data-ui-comment-skip="">
+      <div className="uic-root" data-ui-comment-skip="" onKeyDown={keepKeysInside}>
         <section className="uic-panel" aria-label={labels.title}>
           <header className="uic-head">
             <div>
